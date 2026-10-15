@@ -34,6 +34,8 @@ import {
   Smartphone,
   Play,
   Radio,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { LoginPage } from './LoginPage';
 import { VoiceModeModal } from './VoiceModeModal';
@@ -97,6 +99,8 @@ export default function App() {
   const [statusMessage, setStatusMessage] = useState('Ready');
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
+  const [speakingMsgId, setSpeakingMsgId] = useState<string | null>(null);
+  const [autoVoiceOver, setAutoVoiceOver] = useState<boolean>(true);
 
   // Module 3: History Search & Rename
   const [historySearchQuery, setHistorySearchQuery] = useState('');
@@ -269,9 +273,64 @@ export default function App() {
   const currentConversation = conversations.find(c => c.id === currentConvId) || conversations[0];
 
   // ==========================================
-  // MODULE 2: Main AI Workspace Logic
+  // MODULE 2: Main AI Workspace Logic & Voice-Over
   // ==========================================
+  const stopVoiceOver = () => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setSpeakingMsgId(null);
+    }
+  };
+
+  const playVoiceOver = (text: string, messageId?: string) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    try {
+      stopVoiceOver();
+
+      // Clean markdown, headers, URLs, and citation brackets for natural, pleasant speech
+      const clean = text
+        .replace(/^###\s+Research Synthesis:\s*.*$/gim, '')
+        .replace(/^#{1,6}\s+.*$/gim, '')
+        .replace(/\[\d+\]/g, '')
+        .replace(/^---\s*$/gim, '')
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/\*(.*?)\*/g, '$1')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/Sources & Verified Citations[\s\S]*$/i, '')
+        .replace(/\n{2,}/g, ' ')
+        .trim();
+
+      // Extract core explanatory sentences (up to ~360 chars)
+      const sentences = clean.split(/(?<=[.?!])\s+/);
+      const spoken = sentences.slice(0, 4).join(' ').slice(0, 360).trim();
+
+      if (!spoken) return;
+
+      const utterance = new SpeechSynthesisUtterance(spoken);
+      utterance.rate = 1.02;
+      utterance.pitch = 1.0;
+
+      if (messageId) {
+        setSpeakingMsgId(messageId);
+      }
+
+      utterance.onend = () => {
+        setSpeakingMsgId(null);
+      };
+
+      utterance.onerror = () => {
+        setSpeakingMsgId(null);
+      };
+
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
+      console.warn('Voice-over error:', err);
+      setSpeakingMsgId(null);
+    }
+  };
+
   const startNewConversation = () => {
+    stopVoiceOver();
     const newConv: Conversation = {
       id: crypto.randomUUID(),
       title: 'New Conversation',
@@ -284,11 +343,14 @@ export default function App() {
     setCurrentConvId(newConv.id);
     setActiveTab('workspace');
     setStatusMessage('New conversation ready');
+    return newConv;
   };
 
-  const handleSendMessage = async (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string, options?: { playVoiceOver?: boolean }): Promise<string | void> => {
     const text = (textToSend || inputMessage).trim();
     if (!text || isBusy) return;
+
+    stopVoiceOver();
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -352,6 +414,12 @@ export default function App() {
       conv.messages.push(assistantMsg);
       saveConversations([...updatedConvs]);
       setStatusMessage('Completed with verified sources');
+
+      // Trigger voice-over explaining the solution given
+      if (options?.playVoiceOver || autoVoiceOver) {
+        playVoiceOver(assistantMsg.content, assistantMsg.id);
+      }
+      return assistantMsg.content;
     } catch (err) {
       // Graceful error state with recovery options
       const errMsg: Message = {
@@ -976,6 +1044,30 @@ export default function App() {
                           >
                             <Mail size={12} />
                             <span>Draft Email</span>
+                          </button>
+
+                          <button
+                            className={`action-btn voice-over ${speakingMsgId === msg.id ? 'active' : ''}`}
+                            onClick={() => {
+                              if (speakingMsgId === msg.id) {
+                                stopVoiceOver();
+                              } else {
+                                playVoiceOver(msg.content, msg.id);
+                              }
+                            }}
+                            title={speakingMsgId === msg.id ? 'Stop Voice-Over explanation' : 'Play Voice-Over explanation'}
+                          >
+                            {speakingMsgId === msg.id ? (
+                              <>
+                                <VolumeX size={12} color="#ef4444" />
+                                <span>Stop Voice-Over</span>
+                              </>
+                            ) : (
+                              <>
+                                <Volume2 size={12} color="#3525cd" />
+                                <span>Voice-Over</span>
+                              </>
+                            )}
                           </button>
 
                           <button
@@ -1769,6 +1861,13 @@ export default function App() {
       <VoiceModeModal
         isOpen={showVoiceModal}
         onClose={() => setShowVoiceModal(false)}
+        onStartNewConversation={() => {
+          startNewConversation();
+        }}
+        onSendMessage={async (query: string) => {
+          const res = await handleSendMessage(query, { playVoiceOver: true });
+          return res || undefined;
+        }}
         onApplyQuery={(query) => {
           setInputMessage(query);
           setShowVoiceModal(false);
@@ -1776,6 +1875,7 @@ export default function App() {
         }}
         backendUrl={API}
         userName={userName}
+        currentConversationTitle={currentConversation?.title}
       />
     </div>
   );

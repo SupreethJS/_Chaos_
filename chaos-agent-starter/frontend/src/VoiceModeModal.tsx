@@ -4,16 +4,22 @@ interface VoiceModeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onApplyQuery: (query: string, autoSend?: boolean) => void;
+  onStartNewConversation: () => void;
+  onSendMessage: (query: string, options?: { playVoiceOver?: boolean }) => Promise<string | void>;
   backendUrl?: string;
   userName?: string;
+  currentConversationTitle?: string;
 }
 
 export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
   isOpen,
   onClose,
   onApplyQuery,
+  onStartNewConversation,
+  onSendMessage,
   backendUrl = 'http://localhost:4000',
   userName = 'User',
+  currentConversationTitle = 'Active Chat',
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -25,12 +31,8 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
   // States
   const [isListening, setIsListening] = useState<boolean>(true);
   const [voiceStatus, setVoiceStatus] = useState<string>('Listening intently...');
-  const [userTranscript, setUserTranscript] = useState<string>(
-    'Analyze security audit logs for unusual sign-in activity in EMEA...'
-  );
-  const [telemetryStream, setTelemetryStream] = useState<string>(
-    'Searching workspace telemetry... Found 2 anomalies: 03:41 AM UTC anomalous session switch detected.'
-  );
+  const [userTranscript, setUserTranscript] = useState<string>('');
+  const [assistantSolution, setAssistantSolution] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [latencyMs, setLatencyMs] = useState<number>(18);
   const [autoSpeak, setAutoSpeak] = useState<boolean>(true);
@@ -85,6 +87,18 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
     }
   };
 
+  // Handle New Conversation from within Voice Assistant
+  const handleStartNewConvo = () => {
+    stopSpeech();
+    onStartNewConversation();
+    setUserTranscript('');
+    setAssistantSolution('');
+    setVoiceStatus('New conversation ready. Listening intently...');
+    setShowSettingsToast('Started new conversation — previous stored in history');
+    setTimeout(() => setShowSettingsToast(null), 2500);
+    startListening();
+  };
+
   // Speak text using Web Speech API with automatic mic feedback isolation
   const speakText = (text: string) => {
     if (!autoSpeak || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
@@ -131,65 +145,37 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
     }
   };
 
-  // Trigger query to JARVIS backend
+  // Trigger query to normal chatbox with voice-over
   const handleQuery = async (queryText: string) => {
     if (!queryText.trim() || isProcessing) return;
     setIsProcessing(true);
     pauseListening();
     setVoiceStatus(`Processing: "${queryText.slice(0, 24)}..."`);
     setUserTranscript(queryText);
-    setTelemetryStream('Connecting to JARVIS knowledge net... Synthesizing stream...');
+    setAssistantSolution('Adding question to normal chatbox and synthesizing solution with voice-over...');
 
     const start = performance.now();
     try {
-      const res = await fetch(`${backendUrl}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: queryText }),
-      });
-
+      // Dispatches directly into normal chatbox (stored in active conversation & history)
+      const answer = await onSendMessage(queryText, { playVoiceOver: true });
       const elapsed = Math.round(performance.now() - start);
       setLatencyMs(elapsed > 0 ? elapsed : 18);
 
-      if (res.ok) {
-        const data = await res.json();
-        const rawAnswer = data.answer || 'Knowledge stream verified. Systems normal.';
-        const { display } = cleanVoiceDisplayText(rawAnswer);
-        setTelemetryStream(display);
-        setVoiceStatus('JARVIS response ready');
-        speakText(rawAnswer);
-      } else {
-        throw new Error(`Status ${res.status}`);
-      }
-    } catch {
-      // Graceful telemetry fallback
-      const simulatedResponses: Record<string, string> = {
-        'Summarize findings':
-          'Telemetry Synthesis: Analyzed 1,420 events. 2 session anomalies in EMEA region flagged. Risk level: Low. Auth protocol E2EE enforced.',
-        'Run vulnerability check':
-          'Security Pipeline: Checked 34 microservice endpoints and token handlers. 0 CVEs detected. All integrity gates verified green.',
-        'Export to SOC':
-          'SOC Dispatch: Packaged incident payload with SHA-256 telemetry seal. Streamed to Security Operations Center queue successfully.',
-      };
-
-      const fallback =
-        simulatedResponses[queryText] ||
-        `Temporal analysis complete: Verified telemetry for "${queryText}". Systems operating within normal parameters.`;
-
-      const { display } = cleanVoiceDisplayText(fallback);
-      setTelemetryStream(display);
-      setVoiceStatus('Telemetry stream updated');
-      speakText(fallback);
+      const rawAnswer = answer || 'Solution generated and added to normal chatbox.';
+      const { display } = cleanVoiceDisplayText(rawAnswer);
+      setAssistantSolution(display);
+      setVoiceStatus('Solution added to chatbox with voice-over');
+    } catch (err) {
+      setAssistantSolution('Question sent to chatbox. Check chatbox for response.');
+      setVoiceStatus('Dispatched to normal chatbox');
     } finally {
       setIsProcessing(false);
-      if (!isSpeakingRef.current && isListening) {
-        setTimeout(() => {
-          if (isComponentMounted.current && isListening && !isSpeakingRef.current) {
-            setVoiceStatus('Listening intently...');
-            startListening();
-          }
-        }, 1000);
-      }
+      setTimeout(() => {
+        if (isComponentMounted.current && isListening && !isSpeakingRef.current) {
+          setVoiceStatus('Listening intently...');
+          startListening();
+        }
+      }, 1500);
     }
   };
 
@@ -568,26 +554,37 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
               <div className="voice-brand-logo-wrap">
                 <img
                   src="/jarvis-logo.png"
-                  alt="JARVIS Voice Security"
+                  alt="JARVIS Voice Assistant"
                   className="voice-brand-logo-img"
                 />
               </div>
-              <span className="voice-header-title">Sign In Credentials</span>
-            </div>
-            <div className="voice-header-right">
-              <div className="voice-user-avatar">
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-                  person
-                </span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span className="voice-header-title">JARVIS Voice Assistant</span>
+                <span style={{ fontSize: 11, color: '#64748b' }}>{currentConversationTitle}</span>
               </div>
+            </div>
+
+            <div className="voice-header-right">
+              {/* NEW CONVO BUTTON INSIDE VOICE ASSISTANT */}
+              <button
+                type="button"
+                className="voice-new-convo-btn"
+                onClick={handleStartNewConvo}
+                title="Start a new conversation (previous stored in history)"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+                  add
+                </span>
+                <span>New Convo</span>
+              </button>
             </div>
           </div>
 
-          {/* Auth Progress Steps */}
-          <div className="voice-progress-steps" aria-label="Auth Progress Steps">
+          {/* Progress Steps */}
+          <div className="voice-progress-steps" aria-label="Voice Assistant Status">
             <div className="voice-step-bar active"></div>
-            <div className="voice-step-bar"></div>
-            <div className="voice-step-bar"></div>
+            <div className="voice-step-bar active"></div>
+            <div className="voice-step-bar active"></div>
           </div>
         </header>
 
@@ -659,7 +656,7 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
             </div>
           </div>
 
-          {/* Live Transcription Stream Card (From user screenshot) */}
+          {/* Live Chatbox Sync Card (Clean - NO TELEMETRY STREAM) */}
           <div className="voice-stream-card">
             <div className="voice-stream-user-row">
               <div className="voice-stream-icon user">
@@ -668,7 +665,7 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
                 </span>
               </div>
               <div className="voice-stream-user-text">
-                "{userTranscript}"
+                {userTranscript ? `"${userTranscript}"` : 'Speak your question or tap a topic below...'}
               </div>
             </div>
 
@@ -682,78 +679,99 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
               </div>
               <div className="voice-stream-telemetry-content">
                 <div className="voice-stream-label">
-                  <span>TELEMETRY STREAM</span>
-                  <span className="voice-live-dot"></span>
+                  <span>NORMAL CHATBOX RESPONSE</span>
+                  <span className="voice-voiceover-tag">
+                    <span className="material-symbols-outlined" style={{ fontSize: 12 }}>volume_up</span>
+                    Voice-Over Active
+                  </span>
                 </div>
                 <div className="voice-stream-body">
-                  {telemetryStream}
+                  {assistantSolution || 'Questions asked via voice are automatically sent to the normal chatbox with full citations and audio voice-over explanation.'}
                 </div>
+                {assistantSolution && (
+                  <button
+                    type="button"
+                    className="voice-view-chatbox-link"
+                    onClick={() => onClose()}
+                  >
+                    <span>View solution in Normal Chatbox</span>
+                    <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Prompt Quick-Suggestion Chips */}
+          {/* Prompt Quick-Suggestion Chips (Real research queries, no telemetry jargon) */}
           <div className="voice-chips-scroll">
             <button
               className="voice-chip-btn"
-              onClick={() => handleQuery('Summarize findings')}
+              onClick={() => handleQuery('Explain about Doraemon')}
               type="button"
             >
               <span className="material-symbols-outlined text-primary" style={{ fontSize: 16 }}>
-                analytics
+                auto_stories
               </span>
-              <span>Summarize findings</span>
+              <span>Explain about Doraemon</span>
             </button>
 
             <button
               className="voice-chip-btn"
-              onClick={() => handleQuery('Run vulnerability check')}
+              onClick={() => handleQuery('What is quantum computing')}
               type="button"
             >
               <span className="material-symbols-outlined text-secondary" style={{ fontSize: 16 }}>
-                verified_user
+                psychology
               </span>
-              <span>Run vulnerability check</span>
+              <span>What is quantum computing</span>
             </button>
 
             <button
               className="voice-chip-btn"
-              onClick={() => handleQuery('Export to SOC')}
+              onClick={() => handleQuery('Explain about antibiotics')}
               type="button"
             >
               <span className="material-symbols-outlined text-outline" style={{ fontSize: 16 }}>
-                send
+                medication
               </span>
-              <span>Export to SOC</span>
+              <span>Explain about antibiotics</span>
+            </button>
+
+            <button
+              className="voice-chip-btn"
+              onClick={() => handleQuery('Renewable energy advances')}
+              type="button"
+            >
+              <span className="material-symbols-outlined text-primary" style={{ fontSize: 16 }}>
+                solar_power
+              </span>
+              <span>Renewable energy</span>
             </button>
           </div>
 
           {/* Bottom Interactive Floating Control Dock */}
           <div className="voice-control-dock">
-            {/* Secondary Action: Audio Sensitivity / Settings */}
+            {/* New Conversation Button in dock */}
             <button
-              aria-label="Audio Configuration"
+              aria-label="Start New Conversation"
               className="voice-dock-btn"
-              onClick={() => {
-                setAutoSpeak(!autoSpeak);
-                setShowSettingsToast(`Voice feedback: ${!autoSpeak ? 'Enabled' : 'Muted'}`);
-                setTimeout(() => setShowSettingsToast(null), 2000);
-              }}
-              title="Toggle Audio Feedback"
+              onClick={handleStartNewConvo}
+              title="Start New Conversation (Previous stored in history)"
               type="button"
+              style={{ color: '#3525cd', background: 'rgba(53, 37, 205, 0.1)' }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                {autoSpeak ? 'tune' : 'volume_off'}
+                add_comment
               </span>
             </button>
 
-            {/* Secondary Action: Save Transcript */}
+            {/* Secondary Action: Save / Copy Transcript */}
             <button
               aria-label="Save Audio Memo"
               className="voice-dock-btn"
               onClick={() => {
                 if (navigator.clipboard) {
-                  navigator.clipboard.writeText(`${userTranscript}\n\nResponse:\n${telemetryStream}`);
+                  navigator.clipboard.writeText(`${userTranscript}\n\nResponse:\n${assistantSolution}`);
                 }
                 setShowSettingsToast('Transcript copied to clipboard');
                 setTimeout(() => setShowSettingsToast(null), 2000);
@@ -786,35 +804,37 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
               </button>
             </div>
 
-            {/* Secondary Action: Text Mode / Keyboard Input */}
+            {/* Switch to Normal Chatbox */}
             <button
-              aria-label="Switch to Text Mode"
+              aria-label="Open Normal Chatbox"
               className="voice-dock-btn"
               onClick={() => {
-                onApplyQuery(userTranscript);
+                if (userTranscript) {
+                  onApplyQuery(userTranscript);
+                }
                 onClose();
               }}
-              title="Apply to Chat Composer"
+              title="Open Normal Chatbox"
               type="button"
             >
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                keyboard
+                chat
               </span>
             </button>
 
             {/* Terminate Session Action */}
             <button
-              aria-label="End Voice Session"
+              aria-label="Close Voice Assistant"
               className="voice-dock-btn danger"
               onClick={() => {
                 stopSpeech();
                 onClose();
               }}
-              title="End Session"
+              title="Close Voice Assistant"
               type="button"
             >
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                call_end
+                close
               </span>
             </button>
           </div>

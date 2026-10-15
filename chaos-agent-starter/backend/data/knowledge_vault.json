@@ -1,7 +1,42 @@
 {
   "version": "1.0",
-  "updatedAt": "2026-10-15T12:56:02.342Z",
+  "updatedAt": "2026-10-15T15:13:13.716Z",
   "entries": [
+    {
+      "id": "kb_1792070685422",
+      "query": "tomorrow holiday",
+      "normalizedKey": "tomorrow holiday",
+      "topic": "HolidayCheck Group",
+      "summary": "HolidayCheck Group AG is an exchange-listed internet company based in Munich, Germany. It operates online portals for package-holiday reviews and bookings in Germany, Austria and Switzerland under the HolidayCheck brand.",
+      "fullAnswer": "### Research Synthesis: HolidayCheck Group\n\n#### 1. Definition & Core Overview\nHolidayCheck Group AG is an exchange-listed internet company based in Munich, Germany. It operates online portals for package-holiday reviews and bookings in Germany, Austria and Switzerland under the HolidayCheck brand. [1]\n\n#### 3. Key Concepts & Clinical / Practical Applications\n- **Edge of Tomorrow:** Edge of Tomorrow (also marketed as Live Die Repeat: Edge of Tomorrow) is a 2014 American military science fiction action film directed by Doug Liman and [2]\n- **The Tomorrow People:** The Tomorrow People is a British children&#039;s science fiction television series created by Roger Price. Produced by Thames Television for the ITV Network [3]\n\n---\n\n### Sources & Verified Citations\n- [1] **HolidayCheck Group (Comprehensive Overview)** (2026) – [https://en.wikipedia.org/wiki/HolidayCheck_Group](https://en.wikipedia.org/wiki/HolidayCheck_Group)\n- [2] **Edge of Tomorrow** (2026) – [https://en.wikipedia.org/wiki/Edge%20of%20Tomorrow](https://en.wikipedia.org/wiki/Edge%20of%20Tomorrow)\n- [3] **The Tomorrow People** (2026) – [https://en.wikipedia.org/wiki/The%20Tomorrow%20People](https://en.wikipedia.org/wiki/The%20Tomorrow%20People)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "HolidayCheck Group (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/HolidayCheck_Group",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "Edge of Tomorrow",
+          "url": "https://en.wikipedia.org/wiki/Edge%20of%20Tomorrow",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "The Tomorrow People",
+          "url": "https://en.wikipedia.org/wiki/The%20Tomorrow%20People",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T13:24:45.422Z",
+      "updatedAt": "2026-10-15T13:24:45.423Z",
+      "hitCount": 1
+    },
     {
       "id": "kb_1792068962341",
       "query": "Research breakthrough advances in renewable energy (tandem solar, sodium-ion grid storage, floating offshore wind) and cite verified sources.",
@@ -244,8 +279,8 @@
       ],
       "provider": "live-web-search",
       "createdAt": "2026-10-15T12:50:25.822Z",
-      "updatedAt": "2026-10-15T12:50:25.824Z",
-      "hitCount": 1
+      "updatedAt": "2026-10-15T15:13:13.716Z",
+      "hitCount": 2
     },
     {
       "id": "kb_1792068134025",
@@ -433,8 +468,8 @@
       ],
       "provider": "live-web-search",
       "createdAt": "2026-10-15T12:33:14.052Z",
-      "updatedAt": "2026-10-15T12:41:28.360Z",
-      "hitCount": 3
+      "updatedAt": "2026-10-15T12:56:56.854Z",
+      "hitCount": 4
     }
   ]
 }
