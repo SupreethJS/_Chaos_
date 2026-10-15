@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { exec, execSync } from 'child_process';
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -333,32 +334,87 @@ app.post('/api/install-desktop-shortcut', (_req, res) => {
   try {
     const userHome = process.env.USERPROFILE || process.env.HOME || os.homedir();
     const desktopDir = path.join(userHome, 'Desktop');
+    const projectRoot = path.resolve(process.cwd(), '..');
     const appUrl = process.env.FRONTEND_ORIGIN || 'http://localhost:5173/';
 
     if (!fs.existsSync(desktopDir)) {
       return res.status(404).json({ ok: false, error: 'Desktop folder not found on host machine.' });
     }
 
+    // 1. Create Smart Launcher BAT
+    const batFilePath = path.join(desktopDir, 'Launch JARVIS.bat');
+    const batContent = `@echo off\r\n` +
+      `title JARVIS — The Time Traveller\r\n` +
+      `cd /d "${projectRoot}"\r\n\r\n` +
+      `:: Check if backend service is running\r\n` +
+      `netstat -ano | findstr :4000 >nul\r\n` +
+      `if %errorlevel% neq 0 (\r\n` +
+      `    echo [JARVIS] Starting backend service in the background...\r\n` +
+      `    start "JARVIS Backend" /min cmd /c "npm run dev:backend"\r\n` +
+      `)\r\n\r\n` +
+      `:: Check if frontend dev server is running\r\n` +
+      `netstat -ano | findstr :5173 >nul\r\n` +
+      `if %errorlevel% neq 0 (\r\n` +
+      `    echo [JARVIS] Starting frontend service in the background...\r\n` +
+      `    start "JARVIS Frontend" /min cmd /c "npm run dev:frontend"\r\n` +
+      `    echo [JARVIS] Waiting for workspace engine to initialize...\r\n` +
+      `    timeout /t 3 /nobreak >nul\r\n` +
+      `)\r\n\r\n` +
+      `echo [JARVIS] Launching in standalone application window mode...\r\n` +
+      `if exist "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" (\r\n` +
+      `    start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --app="${appUrl}" --window-size=1440,900\r\n` +
+      `) else if exist "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" (\r\n` +
+      `    start "" "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" --app="${appUrl}" --window-size=1440,900\r\n` +
+      `) else (\r\n` +
+      `    start "" "${appUrl}"\r\n` +
+      `)\r\n` +
+      `exit\r\n`;
+
+    fs.writeFileSync(batFilePath, batContent, 'utf-8');
+
+    // 2. Create Internet Shortcut URL
     const urlFilePath = path.join(desktopDir, 'JARVIS — The Time Traveller.url');
     const urlContent = `[InternetShortcut]\r\nURL=${appUrl}\r\nIconIndex=0\r\nIconFile=C:\\Windows\\System32\\shell32.dll\r\n[{000214A0-0000-0000-C000-000000000046}]\r\nProp3=19,11\r\n`;
     fs.writeFileSync(urlFilePath, urlContent, 'utf-8');
 
-    const batFilePath = path.join(desktopDir, 'Launch JARVIS.bat');
-    const batContent = `@echo off\r\ntitle JARVIS - The Time Traveller\r\necho Launching JARVIS on your laptop...\r\nstart "" "${appUrl}"\r\nexit\r\n`;
-    fs.writeFileSync(batFilePath, batContent, 'utf-8');
+    // 3. Create Windows .lnk Shortcut with icon via PowerShell
+    const lnkFilePath = path.join(desktopDir, 'JARVIS — The Time Traveller.lnk');
+    try {
+      const psScript = `& { $w = New-Object -ComObject WScript.Shell; $s = $w.CreateShortcut('${lnkFilePath.replace(/'/g, "''")}'); $s.TargetPath = '${batFilePath.replace(/'/g, "''")}'; $s.WorkingDirectory = '${projectRoot.replace(/'/g, "''")}'; $s.IconLocation = 'C:\\Windows\\System32\\shell32.dll,220'; $s.Description = 'JARVIS — The Time Traveller Autonomous Workspace'; $s.Save(); }`;
+      execSync(`powershell -NoProfile -Command "${psScript.replace(/"/g, '\\"')}"`, { stdio: 'ignore' });
+    } catch (lnkErr) {
+      console.warn('Could not create .lnk via PowerShell:', lnkErr);
+    }
 
-    console.log(`[Jarvis Desktop Installer] Installed shortcuts to: ${urlFilePath} and ${batFilePath}`);
+    console.log(`[Jarvis Desktop Installer] Installed shortcuts to: ${batFilePath}, ${urlFilePath}, and ${lnkFilePath}`);
 
     return res.json({
       ok: true,
-      message: 'JARVIS shortcut successfully placed directly on your laptop homescreen (Desktop)!',
-      path: urlFilePath,
+      message: 'JARVIS desktop application and shortcut successfully installed on your laptop homescreen (Desktop)!',
+      path: lnkFilePath,
       batPath: batFilePath,
+      urlPath: urlFilePath,
       desktopDir
     });
   } catch (err: any) {
     console.error('Failed to create desktop shortcut:', err);
     return res.status(500).json({ ok: false, error: err.message || 'Could not write to desktop' });
+  }
+});
+
+app.post('/api/launch-desktop-app', (_req, res) => {
+  try {
+    const userHome = process.env.USERPROFILE || process.env.HOME || os.homedir();
+    const batFilePath = path.join(userHome, 'Desktop', 'Launch JARVIS.bat');
+    if (fs.existsSync(batFilePath)) {
+      exec(`cmd /c "${batFilePath}"`);
+      return res.json({ ok: true, message: 'JARVIS desktop app launched successfully!' });
+    }
+    const appUrl = process.env.FRONTEND_ORIGIN || 'http://localhost:5173/';
+    exec(`start "" "${appUrl}"`);
+    return res.json({ ok: true, message: 'JARVIS launched in browser!' });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
   }
 });
 

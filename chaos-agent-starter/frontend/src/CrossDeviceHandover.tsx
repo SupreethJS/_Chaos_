@@ -77,35 +77,66 @@ export const CrossDeviceHandover: React.FC<CrossDeviceHandoverProps> = ({
     };
   }, []);
 
-  // Function to download Windows Desktop Shortcut directly via browser
+  // Function to download Windows Desktop Launcher and Shortcut directly via browser
   const triggerBrowserShortcutDownload = () => {
     const appOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
-    const fileContent =
-      '[InternetShortcut]\r\n' +
-      `URL=${appOrigin}/\r\n` +
-      'IconIndex=0\r\n' +
-      'IconFile=C:\\Windows\\System32\\shell32.dll\r\n' +
-      '[{000214A0-0000-0000-C000-000000000046}]\r\n' +
-      'Prop3=19,11\r\n';
+    
+    // 1. Download Smart .bat launcher that auto-checks ports and opens in standalone PWA app mode
+    const batContent =
+      `@echo off\r\n` +
+      `title JARVIS — The Time Traveller\r\n` +
+      `cd /d "%USERPROFILE%\\Desktop\\chaos" 2>nul\r\n\r\n` +
+      `:: Verify and auto-start backend if needed\r\n` +
+      `netstat -ano | findstr :4000 >nul\r\n` +
+      `if %errorlevel% neq 0 (\r\n` +
+      `    echo [JARVIS] Starting backend service in the background...\r\n` +
+      `    start "JARVIS Backend" /min cmd /c "npm run dev:backend"\r\n` +
+      `)\r\n\r\n` +
+      `:: Verify and auto-start frontend if needed\r\n` +
+      `netstat -ano | findstr :5173 >nul\r\n` +
+      `if %errorlevel% neq 0 (\r\n` +
+      `    echo [JARVIS] Starting frontend service in the background...\r\n` +
+      `    start "JARVIS Frontend" /min cmd /c "npm run dev:frontend"\r\n` +
+      `    echo [JARVIS] Initializing workspace engine...\r\n` +
+      `    timeout /t 3 /nobreak >nul\r\n` +
+      `)\r\n\r\n` +
+      `echo [JARVIS] Launching in standalone application mode...\r\n` +
+      `if exist "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe" (\r\n` +
+      `    start "" "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe" --app="${appOrigin}/" --window-size=1440,900\r\n` +
+      `) else if exist "%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe" (\r\n` +
+      `    start "" "%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe" --app="${appOrigin}/" --window-size=1440,900\r\n` +
+      `) else (\r\n` +
+      `    start "" "${appOrigin}/"\r\n` +
+      `)\r\n` +
+      `exit\r\n`;
 
-    const blob = new Blob([fileContent], { type: 'application/octet-stream' });
-    const downloadUrl = URL.createObjectURL(blob);
+    const batBlob = new Blob([batContent], { type: 'application/x-bat' });
+    const batUrl = URL.createObjectURL(batBlob);
     const a = document.createElement('a');
-    a.href = downloadUrl;
-    a.download = 'JARVIS — The Time Traveller.url';
+    a.href = batUrl;
+    a.download = 'Launch JARVIS (Desktop App).bat';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(downloadUrl);
+    URL.revokeObjectURL(batUrl);
+  };
+
+  const handleLaunchAppNow = async () => {
+    try {
+      await fetch(`${backendUrl}/api/launch-desktop-app`, { method: 'POST' });
+    } catch (err) {
+      console.warn('Launch error:', err);
+      window.open('http://localhost:5173/', '_blank');
+    }
   };
 
   const handleInstallClick = async () => {
     setIsInstalling(true);
 
-    // 1. Immediately trigger browser download of .url desktop shortcut
+    // 1. Immediately trigger browser download of .bat desktop launcher
     triggerBrowserShortcutDownload();
 
-    let createdPath = 'C:\\Users\\Admin\\Desktop\\JARVIS — The Time Traveller.url';
+    let createdPath = 'C:\\Users\\Admin\\Desktop\\JARVIS — The Time Traveller.lnk';
 
     // 2. Call backend to place shortcut directly on the user's laptop Desktop
     try {
@@ -570,39 +601,50 @@ export const CrossDeviceHandover: React.FC<CrossDeviceHandoverProps> = ({
               <div className="install-step-item">
                 <span className="install-step-num">1</span>
                 <div>
-                  <strong>Laptop Desktop / Homescreen:</strong> Shortcut <code>JARVIS — The Time Traveller.url</code> has been placed directly on your Windows Desktop. Double-click it anytime to launch!
+                  <strong>Laptop Desktop / Homescreen:</strong> Official shortcut <code>JARVIS — The Time Traveller.lnk</code> and <code>Launch JARVIS.bat</code> have been placed on your Desktop. Double-click anytime to launch!
                 </div>
               </div>
               <div className="install-step-item">
                 <span className="install-step-num">2</span>
                 <div>
-                  <strong>Direct Browser Download:</strong> The shortcut was also downloaded to your browser's Downloads folder so you can move it anywhere.
+                  <strong>Standalone App & Auto-Start Engine:</strong> The launcher automatically verifies that backend and frontend services are running, and opens JARVIS in borderless PWA window mode (no browser address bar or tabs).
                 </div>
               </div>
               <div className="install-step-item">
                 <span className="install-step-num">3</span>
                 <div>
-                  <strong>Standalone App Window:</strong> In Chrome or Edge, click the <strong>Install</strong> icon in the address bar (top right) or Menu &rarr; <em>Save and share</em> &rarr; <em>Install JARVIS</em> to run as a borderless laptop app.
+                  <strong>Browser File Download:</strong> <code>Launch JARVIS (Desktop App).bat</code> has also been saved to your Downloads folder so you can keep a portable copy.
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+            <div style={{ display: 'flex', gap: 10, marginTop: 20, flexWrap: 'wrap' }}>
               <button
+                type="button"
+                className="btn-primary"
+                onClick={handleLaunchAppNow}
+                style={{ flex: 1.2, minWidth: 160, justifyContent: 'center', background: 'linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)' }}
+              >
+                <Sparkles size={14} />
+                <span>Launch Desktop App Now</span>
+              </button>
+              <button
+                type="button"
                 className="btn-secondary"
                 onClick={triggerBrowserShortcutDownload}
-                style={{ flex: 1, justifyContent: 'center' }}
+                style={{ flex: 1, minWidth: 130, justifyContent: 'center' }}
               >
                 <Download size={14} />
                 <span>Re-Download File</span>
               </button>
               <button
-                className="btn-primary"
+                type="button"
+                className="btn-secondary"
                 onClick={() => setShowInstallModal(false)}
-                style={{ flex: 1, justifyContent: 'center' }}
+                style={{ minWidth: 70, justifyContent: 'center' }}
               >
                 <Check size={14} />
-                <span>Done</span>
+                <span>Close</span>
               </button>
             </div>
           </div>
