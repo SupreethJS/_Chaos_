@@ -1,7 +1,147 @@
 {
   "version": "1.0",
-  "updatedAt": "2026-10-15T16:17:39.397Z",
+  "updatedAt": "2026-10-15T16:54:52.709Z",
   "entries": [
+    {
+      "id": "kb_1792083021641",
+      "query": "कंप्यूटर क्या है",
+      "normalizedKey": "",
+      "topic": "संगणक",
+      "summary": "सङ्गणक, संगणक, कम्प्यूटर, या कंप्यूटर एक यन्त्र है जिसे अंकगणित या तर्क से जुड़े कार्य को अपनेआप पूरा करने के लिए प्रोग्राम किया जा सकता है। आधुनिक अंकीय इलेक्ट्रॉनिक संगणक प्रोग्राम के तरह जाने जानेवाले कार्य के सामान्य सेट कर सकते हैं। यह प्रोग्राम संगणक को तरह-तरह के कार्यों को करने में सक्षम बनाते हैं। संगणक प्रणाली एक नाम के लिए संगणक है जिसमें हार्डवेयर, प्रचालन तन्त्र, और परिधीय यन्त्र शामिल हैं जो ज़रूरी हैं और पूरे गणना के लिए उपयोग किए जाते हैं। ये शब्द उन संगणकों के ग्रुप को भी इशारा कर सकता है जो लिंक किए गए हैं और एक साथ कार्य करते हैं, जैसे संगणक सञ्जाल या संगणक क्लस्टर।",
+      "fullAnswer": "शोध सारांश: संगणक\n\n1. परिभाषा एवं मुख्य विवरण\nसङ्गणक, संगणक, कम्प्यूटर, या कंप्यूटर एक यन्त्र है जिसे अंकगणित या तर्क से जुड़े कार्य को अपनेआप पूरा करने के लिए प्रोग्राम किया जा सकता है। आधुनिक अंकीय इलेक्ट्रॉनिक संगणक प्रोग्राम के तरह जाने जानेवाले कार्य के सामान्य सेट कर सकते हैं। यह प्रोग्राम संगणक को तरह-तरह के कार्यों को करने में सक्षम बनाते हैं। संगणक प्रणाली एक नाम के लिए संगणक है जिसमें हार्डवेयर, प्रचालन तन्त्र, और परिधीय यन्त्र शामिल हैं जो ज़रूरी हैं और पूरे गणना के लिए उपयोग किए जाते हैं। ये शब्द उन संगणकों के ग्रुप को भी इशारा कर सकता है जो लिंक किए गए हैं और एक साथ कार्य करते हैं, जैसे संगणक सञ्जाल या संगणक क्लस्टर। [1]\n\n3. महत्वपूर्ण अवधारणाएं एवं व्यावहारिक अनुप्रयोग\n• कंप्यूटर स्मृति: कंप्यूटर स्मृति या मैमोरी का कार्य किसी भी निर्देश, सूचना अथवा परिणाम को संचित करके रखना होता है। कम्प्यूटर के सी.पी.यू. में होने वाली समस्त क्रियायें [2]\n• कंप्यूटर ग्राफिक्स: होता है। कंप्यूटर ग्राफ़िक्स के विकास से कंप्यूटरों के कई प्रकार के डाटा को समझने, भाषांतर करने और प्रयोग करने के अनुभव बढ़े हैं। कंप्यूटर ग्राफ़िक्स [3]\n\nसत्यापित स्रोत एवं संदर्भ:\n• [1] संगणक (2026) – https://hi.wikipedia.org/wiki/%E0%A4%B8%E0%A4%82%E0%A4%97%E0%A4%A3%E0%A4%95\n• [2] कंप्यूटर स्मृति (2026) – https://hi.wikipedia.org/wiki/%E0%A4%95%E0%A4%82%E0%A4%AA%E0%A5%8D%E0%A4%AF%E0%A5%82%E0%A4%9F%E0%A4%B0%20%E0%A4%B8%E0%A5%8D%E0%A4%AE%E0%A5%83%E0%A4%A4%E0%A4%BF\n• [3] कंप्यूटर ग्राफिक्स (2026) – https://hi.wikipedia.org/wiki/%E0%A4%95%E0%A4%82%E0%A4%AA%E0%A5%8D%E0%A4%AF%E0%A5%82%E0%A4%9F%E0%A4%B0%20%E0%A4%97%E0%A5%8D%E0%A4%B0%E0%A4%BE%E0%A4%AB%E0%A4%BF%E0%A4%95%E0%A5%8D%E0%A4%B8\n• [4] Bihar State Electronics Development Corporation (Global Reference) (2026) – https://en.wikipedia.org/wiki/%E0%A4%95%E0%A4%82%E0%A4%AA%E0%A5%8D%E0%A4%AF%E0%A5%82%E0%A4%9F%E0%A4%B0",
+      "sources": [
+        {
+          "id": 1,
+          "title": "संगणक",
+          "url": "https://hi.wikipedia.org/wiki/%E0%A4%B8%E0%A4%82%E0%A4%97%E0%A4%A3%E0%A4%95",
+          "year": "2026",
+          "sourceName": "हिन्दी विकिपीडिया ज्ञानकोश"
+        },
+        {
+          "id": 2,
+          "title": "कंप्यूटर स्मृति",
+          "url": "https://hi.wikipedia.org/wiki/%E0%A4%95%E0%A4%82%E0%A4%AA%E0%A5%8D%E0%A4%AF%E0%A5%82%E0%A4%9F%E0%A4%B0%20%E0%A4%B8%E0%A5%8D%E0%A4%AE%E0%A5%83%E0%A4%A4%E0%A4%BF",
+          "year": "2026",
+          "sourceName": "हिन्दी विकिपीडिया ज्ञानकोश"
+        },
+        {
+          "id": 3,
+          "title": "कंप्यूटर ग्राफिक्स",
+          "url": "https://hi.wikipedia.org/wiki/%E0%A4%95%E0%A4%82%E0%A4%AA%E0%A5%8D%E0%A4%AF%E0%A5%82%E0%A4%9F%E0%A4%B0%20%E0%A4%97%E0%A5%8D%E0%A4%B0%E0%A4%BE%E0%A4%AB%E0%A4%BF%E0%A4%95%E0%A5%8D%E0%A4%B8",
+          "year": "2026",
+          "sourceName": "हिन्दी विकिपीडिया ज्ञानकोश"
+        },
+        {
+          "id": 4,
+          "title": "Bihar State Electronics Development Corporation (Global Reference)",
+          "url": "https://en.wikipedia.org/wiki/%E0%A4%95%E0%A4%82%E0%A4%AA%E0%A5%8D%E0%A4%AF%E0%A5%82%E0%A4%9F%E0%A4%B0",
+          "year": "2026",
+          "sourceName": "Wikipedia Global Archive"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T16:50:21.641Z",
+      "updatedAt": "2026-10-15T16:50:21.642Z",
+      "hitCount": 8
+    },
+    {
+      "id": "kb_1792082375944",
+      "query": "give a detailed report on this",
+      "normalizedKey": "give a detailed report on this",
+      "topic": "Presentation",
+      "summary": "A presentation conveys information from a speaker to an audience. Presentations are typically demonstrations, introduction, lecture, or speech meant to inform, persuade, inspire, motivate, build goodwill, or present a new idea/product. Presentations usually require preparation, organization, event planning, writing, use of visual aids, dealing with stress, and answering questions. \"The key elements of a presentation consists of presenter, audience, message, reaction and method to deliver speech for organizational success in an effective manner.\"",
+      "fullAnswer": "Research Synthesis: Presentation\n\n1. Definition & Core Overview\nA presentation conveys information from a speaker to an audience. Presentations are typically demonstrations, introduction, lecture, or speech meant to inform, persuade, inspire, motivate, build goodwill, or present a new idea/product. Presentations usually require preparation, organization, event planning, writing, use of visual aids, dealing with stress, and answering questions. \"The key elements of a presentation consists of presenter, audience, message, reaction and method to deliver speech for organizational success in an effective manner.\" [1]\n\n3. Key Concepts & Practical Applications\n• Report card: A report card, or just report in British English – sometimes called a progress report or achievement report – communicates a student&#039;s performance academically [2]\n• Jerzy Tabeau: first escapees from Auschwitz to give a detailed report to the outside world on the genocide occurring there. First reports in early 1942 had been made by [3]\n\nSources & Verified Citations:\n• [1] Presentation (Comprehensive Overview) (2026) – https://en.wikipedia.org/wiki/Presentation\n• [2] Report card (2026) – https://en.wikipedia.org/wiki/Report%20card\n• [3] Jerzy Tabeau (2026) – https://en.wikipedia.org/wiki/Jerzy%20Tabeau\n• [4] Methodology Is Destiny: The Effect of Survey Prompts on Reported Levels of Giving and Volunteering (2004) – https://doi.org/10.1177/0899764004269312\n• [5] THE NEED FOR DETAILED SPUTUM REPORTS (1915) – https://doi.org/10.1001/jama.1915.02570310047015",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Presentation (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Presentation",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "Report card",
+          "url": "https://en.wikipedia.org/wiki/Report%20card",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "Jerzy Tabeau",
+          "url": "https://en.wikipedia.org/wiki/Jerzy%20Tabeau",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 4,
+          "title": "Methodology Is Destiny: The Effect of Survey Prompts on Reported Levels of Giving and Volunteering",
+          "url": "https://doi.org/10.1177/0899764004269312",
+          "year": "2004",
+          "sourceName": "Nonprofit and Voluntary Sector Quarterly"
+        },
+        {
+          "id": 5,
+          "title": "THE NEED FOR DETAILED SPUTUM REPORTS",
+          "url": "https://doi.org/10.1001/jama.1915.02570310047015",
+          "year": "1915",
+          "sourceName": "JAMA"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T16:39:35.944Z",
+      "updatedAt": "2026-10-15T16:39:35.945Z",
+      "hitCount": 1
+    },
+    {
+      "id": "kb_1792082035020",
+      "query": "what is genome",
+      "normalizedKey": "genome",
+      "topic": "Genome",
+      "summary": "In the fields of molecular biology and genetics, a genome is all the genetic information of an organism. It consists of nucleotide sequences of DNA. The nuclear genome includes protein-coding genes and non-coding genes, other functional regions of the genome such as regulatory sequences, and often a substantial fraction of junk DNA with no evident function. Almost all eukaryotes have mitochondria and a small mitochondrial genome. Algae and plants also contain chloroplasts with a chloroplast genome.",
+      "fullAnswer": "Research Synthesis: Genome\n\n1. Definition & Core Overview\nIn the fields of molecular biology and genetics, a genome is all the genetic information of an organism. It consists of nucleotide sequences of DNA. The nuclear genome includes protein-coding genes and non-coding genes, other functional regions of the genome such as regulatory sequences, and often a substantial fraction of junk DNA with no evident function. Almost all eukaryotes have mitochondria and a small mitochondrial genome. Algae and plants also contain chloroplasts with a chloroplast genome. [1]\n\n3. Key Concepts & Practical Applications\n• Human genome: These are usually treated separately as the nuclear genome and the mitochondrial genome. Human genomes include both genes and various other types of functional [2]\n• Virus: replication cycle where the genome is encoded in DNA. Most viruses have RNA genomes. Plant viruses tend to have single-stranded RNA genomes, and bacteriophages [3]\n\nSources & Verified Citations:\n• [1] Genome (Comprehensive Overview) (2026) – https://en.wikipedia.org/wiki/Genome\n• [2] Human genome (2026) – https://en.wikipedia.org/wiki/Human%20genome\n• [3] Virus (2026) – https://en.wikipedia.org/wiki/Virus\n• [4] The bonobo genome compared with the chimpanzee and human genomes (2012) – https://doi.org/10.1038/nature11128\n• [5] The Norway spruce genome sequence and conifer genome evolution (2013) – https://doi.org/10.1038/nature12211",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Genome (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Genome",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "Human genome",
+          "url": "https://en.wikipedia.org/wiki/Human%20genome",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "Virus",
+          "url": "https://en.wikipedia.org/wiki/Virus",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 4,
+          "title": "The bonobo genome compared with the chimpanzee and human genomes",
+          "url": "https://doi.org/10.1038/nature11128",
+          "year": "2012",
+          "sourceName": "Nature"
+        },
+        {
+          "id": 5,
+          "title": "The Norway spruce genome sequence and conifer genome evolution",
+          "url": "https://doi.org/10.1038/nature12211",
+          "year": "2013",
+          "sourceName": "Nature"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T16:33:55.020Z",
+      "updatedAt": "2026-10-15T16:54:52.709Z",
+      "hitCount": 3
+    },
     {
       "id": "kb_1792077861904",
       "query": "what is anime",

@@ -36,6 +36,7 @@ import {
   Radio,
   Volume2,
   VolumeX,
+  Globe,
 } from 'lucide-react';
 import { LoginPage } from './LoginPage';
 import { VoiceModeModal } from './VoiceModeModal';
@@ -56,6 +57,7 @@ interface Message {
   content: string;
   timestamp: string;
   sources?: SourceCitation[];
+  language?: string;
 }
 
 interface Conversation {
@@ -101,6 +103,9 @@ export default function App() {
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [speakingMsgId, setSpeakingMsgId] = useState<string | null>(null);
   const [autoVoiceOver, setAutoVoiceOver] = useState<boolean>(true);
+  const [selectedLanguage, setSelectedLanguage] = useState<'auto' | 'en' | 'kn' | 'te' | 'hi'>(() => {
+    return (localStorage.getItem('chaos-selected-lang') as 'auto' | 'en' | 'kn' | 'te' | 'hi') || 'auto';
+  });
 
   // Module 3: History Search & Rename
   const [historySearchQuery, setHistorySearchQuery] = useState('');
@@ -347,7 +352,18 @@ export default function App() {
     }
   };
 
-  const playVoiceOver = (text: string, messageId?: string) => {
+  const detectClientLanguage = (text: string): 'kn' | 'te' | 'hi' | 'en' => {
+    if (!text) return 'en';
+    const knMatches = (text.match(/[\u0C80-\u0CFF]/g) || []).length;
+    const teMatches = (text.match(/[\u0C00-\u0C7F]/g) || []).length;
+    const hiMatches = (text.match(/[\u0900-\u097F]/g) || []).length;
+    if (knMatches > 0 && knMatches >= teMatches && knMatches >= hiMatches) return 'kn';
+    if (teMatches > 0 && teMatches >= knMatches && teMatches >= hiMatches) return 'te';
+    if (hiMatches > 0 && hiMatches >= knMatches && hiMatches >= teMatches) return 'hi';
+    return 'en';
+  };
+
+  const playVoiceOver = (text: string, messageId?: string, forcedLang?: string) => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     try {
       stopVoiceOver();
@@ -355,6 +371,12 @@ export default function App() {
       // Clean special characters, hashtags, asterisks, URLs, and citation brackets for natural, pleasant speech
       const cleaned = cleanAnswerText(text)
         .replace(/Sources & Verified Citations[\s\S]*$/i, '')
+        .replace(/ಮೂಲಗಳು ಮತ್ತು ಪರಿಶೀಲಿಸಿದ ಉಲ್ಲೇಖಗಳು[\s\S]*$/i, '')
+        .replace(/ಸಂಶೋಧನಾ ಸಾರಾಂಶ[\s\S]*?(?=\d+\.|$)/i, '')
+        .replace(/మూలాలు మరియు ధృవీకరించబడిన సూచనలు[\s\S]*$/i, '')
+        .replace(/పరిశోధన సారాంశం[\s\S]*?(?=\d+\.|$)/i, '')
+        .replace(/सत्यापित स्रोत एवं संदर्भ[\s\S]*$/i, '')
+        .replace(/शोध सारांश[\s\S]*?(?=\d+\.|$)/i, '')
         .replace(/\[\d+\]/g, '')
         .replace(/https?:\/\/\S+/g, '')
         .replace(/[•]/g, '')
@@ -362,14 +384,34 @@ export default function App() {
         .trim();
 
       // Extract core explanatory sentences (up to ~360 chars)
-      const sentences = cleaned.split(/(?<=[.?!])\s+/);
+      const sentences = cleaned.split(/(?<=[.?!।])\s+/);
       const spoken = sentences.slice(0, 4).join(' ').slice(0, 360).trim();
 
       if (!spoken) return;
 
       const utterance = new SpeechSynthesisUtterance(spoken);
-      utterance.rate = 1.02;
+      utterance.rate = 1.0;
       utterance.pitch = 1.0;
+
+      const lang = forcedLang && forcedLang !== 'auto' ? forcedLang : detectClientLanguage(spoken);
+      const langCodeMap: Record<string, string> = {
+        kn: 'kn-IN',
+        te: 'te-IN',
+        hi: 'hi-IN',
+        en: 'en-US'
+      };
+      const targetLangCode = langCodeMap[lang] || 'en-US';
+      utterance.lang = targetLangCode;
+
+      const voices = window.speechSynthesis.getVoices();
+      const matchingVoice = voices.find(
+        (v) =>
+          v.lang.toLowerCase().startsWith(lang) ||
+          v.lang.toLowerCase().replace('_', '-').startsWith(targetLangCode.toLowerCase())
+      );
+      if (matchingVoice) {
+        utterance.voice = matchingVoice;
+      }
 
       if (messageId) {
         setSpeakingMsgId(messageId);
@@ -407,17 +449,24 @@ export default function App() {
     return newConv;
   };
 
-  const handleSendMessage = async (textToSend?: string, options?: { playVoiceOver?: boolean }): Promise<string | void> => {
+  const handleSendMessage = async (
+    textToSend?: string,
+    options?: { playVoiceOver?: boolean; language?: string }
+  ): Promise<string | void> => {
     const text = (textToSend || inputMessage).trim();
     if (!text || isBusy) return;
 
     stopVoiceOver();
 
+    const userLanguage = options?.language || selectedLanguage;
+    const detectedLang = detectClientLanguage(text);
+
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: 'user',
       content: text,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      language: userLanguage !== 'auto' ? userLanguage : detectedLang
     };
 
     let updatedConvs = [...conversations];
@@ -450,7 +499,11 @@ export default function App() {
       const response = await fetch(`${API}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history: historyPayload })
+        body: JSON.stringify({
+          message: text,
+          language: userLanguage,
+          history: historyPayload
+        })
       });
 
       if (!response.ok) {
@@ -466,6 +519,7 @@ export default function App() {
         role: 'assistant',
         content: cleanAnswerText(data.answer || 'Research synthesis completed.'),
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        language: data.language || userLanguage,
         sources: data.sources || [
           { id: 1, title: 'National Renewable Energy Laboratory (NREL)', year: '2025', url: 'https://www.nrel.gov' },
           { id: 2, title: 'Nature Energy Insights', year: '2025', url: 'https://www.nature.com/nenergy' }
@@ -476,9 +530,9 @@ export default function App() {
       saveConversations([...updatedConvs]);
       setStatusMessage('Completed with verified sources');
 
-      // Trigger voice-over explaining the solution given
+      // Trigger voice-over explaining the solution given in the matching language
       if (options?.playVoiceOver || autoVoiceOver) {
-        playVoiceOver(assistantMsg.content, assistantMsg.id);
+        playVoiceOver(assistantMsg.content, assistantMsg.id, assistantMsg.language);
       }
       return assistantMsg.content;
     } catch (err) {
@@ -1118,7 +1172,7 @@ export default function App() {
                               if (speakingMsgId === msg.id) {
                                 stopVoiceOver();
                               } else {
-                                playVoiceOver(msg.content, msg.id);
+                                playVoiceOver(msg.content, msg.id, msg.language);
                               }
                             }}
                             title={speakingMsgId === msg.id ? 'Stop Voice-Over explanation' : 'Play Voice-Over explanation'}
@@ -1183,6 +1237,37 @@ export default function App() {
 
             {/* Composer */}
             <div className="chat-composer-wrap">
+              {/* Language Selector Bar */}
+              <div className="language-selector-bar">
+                <span className="lang-label">
+                  <Globe size={13} />
+                  <span>Language:</span>
+                </span>
+                <div className="lang-pills">
+                  {[
+                    { id: 'auto', label: 'Auto Detect' },
+                    { id: 'kn', label: 'ಕನ್ನಡ' },
+                    { id: 'te', label: 'తెలుగు' },
+                    { id: 'hi', label: 'हिन्दी' },
+                    { id: 'en', label: 'English' },
+                  ].map((l) => (
+                    <button
+                      key={l.id}
+                      type="button"
+                      className={`lang-pill ${selectedLanguage === l.id ? 'active' : ''}`}
+                      onClick={() => {
+                        const lang = l.id as 'auto' | 'en' | 'kn' | 'te' | 'hi';
+                        setSelectedLanguage(lang);
+                        localStorage.setItem('chaos-selected-lang', lang);
+                      }}
+                      title={`Ask in ${l.label}`}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="chat-composer">
                 <div className="composer-input-row">
                   <button
@@ -1196,11 +1281,19 @@ export default function App() {
                   </button>
                   <textarea
                     className="composer-textarea"
-                    placeholder="Ask a question, enter research topic, or tap mic to speak..."
+                    placeholder={
+                      selectedLanguage === 'kn'
+                        ? 'ಕನ್ನಡದಲ್ಲಿ ಪ್ರಶ್ನೆಯನ್ನು ಕೇಳಿ ಅಥವಾ ಮಾತನಾಡಲು ಮೈಕ್ ಒತ್ತಿರಿ...'
+                        : selectedLanguage === 'te'
+                        ? 'తెలుగులో ప్రశ్నను అడగండి లేదా మాట్లాడటానికి మైక్ నొక్కండి...'
+                        : selectedLanguage === 'hi'
+                        ? 'हिन्दी में प्रश्न पूछें या बोलने के लिए माइक दबाएं...'
+                        : 'Ask a question in Kannada, Telugu, Hindi, or English...'
+                    }
                     rows={1}
                     value={inputMessage}
-                    onChange={e => setInputMessage(e.target.value)}
-                    onKeyDown={e => {
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
                         handleSendMessage();
@@ -1930,8 +2023,11 @@ export default function App() {
         onStartNewConversation={() => {
           startNewConversation();
         }}
-        onSendMessage={async (query: string) => {
-          const res = await handleSendMessage(query, { playVoiceOver: true });
+        onSendMessage={async (query: string, options) => {
+          const res = await handleSendMessage(query, {
+            playVoiceOver: true,
+            language: options?.language || selectedLanguage,
+          });
           return res || undefined;
         }}
         onApplyQuery={(query) => {
@@ -1942,6 +2038,11 @@ export default function App() {
         backendUrl={API}
         userName={userName}
         currentConversationTitle={currentConversation?.title}
+        currentLanguage={selectedLanguage}
+        onLanguageChange={(lang) => {
+          setSelectedLanguage(lang);
+          localStorage.setItem('chaos-selected-lang', lang);
+        }}
       />
     </div>
   );

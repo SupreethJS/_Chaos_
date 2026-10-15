@@ -1,15 +1,38 @@
 import React, { useEffect, useRef, useState } from 'react';
 
+export type VoiceLanguage = 'auto' | 'en' | 'kn' | 'te' | 'hi';
+
 interface VoiceModeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onApplyQuery: (query: string, autoSend?: boolean) => void;
   onStartNewConversation: () => void;
-  onSendMessage: (query: string, options?: { playVoiceOver?: boolean }) => Promise<string | void>;
+  onSendMessage: (query: string, options?: { playVoiceOver?: boolean; language?: string }) => Promise<string | void>;
   backendUrl?: string;
   userName?: string;
   currentConversationTitle?: string;
+  currentLanguage?: VoiceLanguage;
+  onLanguageChange?: (lang: VoiceLanguage) => void;
 }
+
+const langCodeMap: Record<VoiceLanguage, string> = {
+  kn: 'kn-IN',
+  te: 'te-IN',
+  hi: 'hi-IN',
+  en: 'en-US',
+  auto: 'en-US'
+};
+
+const detectVoiceScript = (text: string): VoiceLanguage => {
+  if (!text) return 'en';
+  const knMatches = (text.match(/[\u0C80-\u0CFF]/g) || []).length;
+  const teMatches = (text.match(/[\u0C00-\u0C7F]/g) || []).length;
+  const hiMatches = (text.match(/[\u0900-\u097F]/g) || []).length;
+  if (knMatches > 0 && knMatches >= teMatches && knMatches >= hiMatches) return 'kn';
+  if (teMatches > 0 && teMatches >= knMatches && teMatches >= hiMatches) return 'te';
+  if (hiMatches > 0 && hiMatches >= knMatches && hiMatches >= teMatches) return 'hi';
+  return 'en';
+};
 
 export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
   isOpen,
@@ -20,6 +43,8 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
   backendUrl = 'http://localhost:4000',
   userName = 'User',
   currentConversationTitle = 'Active Chat',
+  currentLanguage = 'auto',
+  onLanguageChange,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -29,6 +54,7 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
   const isSpeakingRef = useRef<boolean>(false);
 
   // States
+  const [selectedLang, setSelectedLang] = useState<VoiceLanguage>(currentLanguage || 'auto');
   const [isListening, setIsListening] = useState<boolean>(true);
   const [voiceStatus, setVoiceStatus] = useState<string>('Listening intently...');
   const [userTranscript, setUserTranscript] = useState<string>('');
@@ -37,6 +63,10 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
   const [latencyMs, setLatencyMs] = useState<number>(18);
   const [autoSpeak, setAutoSpeak] = useState<boolean>(true);
   const [showSettingsToast, setShowSettingsToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (currentLanguage) setSelectedLang(currentLanguage);
+  }, [currentLanguage]);
 
   // Clean raw markdown syntax for voice display and speech synthesis
   const cleanVoiceDisplayText = (text: string): { display: string; speech: string } => {
@@ -128,8 +158,24 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
       }
 
       const utterance = new SpeechSynthesisUtterance(speech);
-      utterance.rate = 1.05;
+      utterance.rate = 1.0;
       utterance.pitch = 1.0;
+
+      // Select regional voice tag
+      const detected = detectVoiceScript(speech);
+      const effectiveLang = selectedLang !== 'auto' ? selectedLang : detected;
+      const targetLangCode = langCodeMap[effectiveLang] || 'en-US';
+      utterance.lang = targetLangCode;
+
+      const voices = window.speechSynthesis.getVoices();
+      const match = voices.find(
+        (v) =>
+          v.lang.toLowerCase().startsWith(effectiveLang) ||
+          v.lang.toLowerCase().replace('_', '-').startsWith(targetLangCode.toLowerCase())
+      );
+      if (match) {
+        utterance.voice = match;
+      }
 
       utterance.onend = () => {
         isSpeakingRef.current = false;
@@ -167,8 +213,8 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
 
     const start = performance.now();
     try {
-      // Dispatches directly into normal chatbox (stored in active conversation & history)
-      const answer = await onSendMessage(queryText, { playVoiceOver: true });
+      // Dispatches directly into normal chatbox with regional language setting
+      const answer = await onSendMessage(queryText, { playVoiceOver: true, language: selectedLang });
       const elapsed = Math.round(performance.now() - start);
       setLatencyMs(elapsed > 0 ? elapsed : 18);
 
@@ -217,7 +263,7 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
-        recognition.lang = 'en-US';
+        recognition.lang = langCodeMap[selectedLang] || 'en-US';
 
         recognition.onstart = () => {
           isRecognizingRef.current = true;
@@ -623,6 +669,39 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
                 </span>
                 <span>E2EE</span>
               </div>
+            </div>
+          </div>
+
+          {/* Regional Language Switcher */}
+          <div className="voice-lang-bar">
+            <span className="voice-lang-title">Language:</span>
+            <div className="voice-lang-pills">
+              {[
+                { id: 'auto', label: 'Auto' },
+                { id: 'kn', label: 'ಕನ್ನಡ' },
+                { id: 'te', label: 'తెలుగు' },
+                { id: 'hi', label: 'हिन्दी' },
+                { id: 'en', label: 'English' },
+              ].map((l) => (
+                <button
+                  key={l.id}
+                  type="button"
+                  className={`voice-lang-btn ${selectedLang === l.id ? 'active' : ''}`}
+                  onClick={() => {
+                    const nextLang = l.id as VoiceLanguage;
+                    setSelectedLang(nextLang);
+                    if (onLanguageChange) onLanguageChange(nextLang);
+                    if (recognitionRef.current) {
+                      recognitionRef.current.lang = langCodeMap[nextLang] || 'en-US';
+                    }
+                    setShowSettingsToast(`Language set to ${l.label}`);
+                    setTimeout(() => setShowSettingsToast(null), 2000);
+                  }}
+                  title={`Speak and listen in ${l.label}`}
+                >
+                  {l.label}
+                </button>
+              ))}
             </div>
           </div>
 
