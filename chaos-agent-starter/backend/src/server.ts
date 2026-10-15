@@ -8,6 +8,8 @@ import { z } from 'zod';
 import OpenAI from 'openai';
 import PDFDocument from 'pdfkit';
 import { Resend } from 'resend';
+import { findKnowledge, saveKnowledge, getAllKnowledge, normalizeQueryKey } from './knowledgeDatabase.js';
+import { fetchLiveWebResearch } from './webKnowledge.js';
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
@@ -136,8 +138,30 @@ app.post('/api/chat', async (req, res) => {
   const parsed = chatSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid request', details: parsed.error.flatten() });
 
-  if (!openai) {
-    const fallbackAnswer = generateResearchSynthesis(parsed.data.message);
+  const { message, history = [] } = parsed.data;
+
+  // 1. Check local persistent knowledge database vault first
+  const cached = findKnowledge(message);
+  if (cached) {
+    console.log(`[Knowledge Vault] Cache hit for "${message}" -> ${cached.topic}`);
+    return res.json({
+      answer: cached.fullAnswer,
+      responseId: `vault-${cached.id}`,
+      provider: 'cached-web-vault',
+      sources: cached.sources,
+      topic: cached.topic,
+      cached: true
+    });
+  }
+
+  // 2. Query the live web research engine (Wikipedia REST API, DuckDuckGo, OpenAlex)
+  console.log(`[Web Intelligence Tool] Executing live web research for query: "${message}"`);
+  let webResearch;
+  try {
+    webResearch = await fetchLiveWebResearch(message);
+  } catch (err) {
+    console.warn('Web research failed, using emergency fallback:', err);
+    const fallbackAnswer = generateResearchSynthesis(message);
     return res.json({
       answer: fallbackAnswer,
       responseId: `local-res-${Date.now()}`,
@@ -145,21 +169,79 @@ app.post('/api/chat', async (req, res) => {
       sources: extractSources(fallbackAnswer)
     });
   }
-  try {
-    const { message, history = [] } = parsed.data;
-    const response = await openai.responses.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
-      instructions: 'You are Jarvis the Time Traveller, an autonomous AI research and temporal analysis assistant. Be clear about uncertainty. Do not claim to have searched the web, created files, saved history, or sent email unless a corresponding tool actually did so. In this starter, this endpoint does not yet execute external tools.',
-      input: [
-        ...history.slice(-12).map((item: { role: 'user' | 'assistant'; content: string }) => ({ role: item.role, content: item.content })),
-        { role: 'user', content: message }
-      ]
-    });
-    res.json({ answer: response.output_text || 'The model returned no text.', responseId: response.id });
-  } catch (error) {
-    console.error('Chat request failed:', error instanceof Error ? error.message : 'unknown error');
-    res.status(502).json({ error: 'The AI request failed. Check backend logs and API configuration.' });
+
+  // 3. If OpenAI is configured, synthesize with LLM using the live web ground truth
+  if (openai) {
+    try {
+      const response = await openai.responses.create({
+        model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
+        instructions: `You are JARVIS — The Time Traveller, an autonomous AI research and temporal analysis assistant. Answer the user question using these verified real-world facts and citations retrieved from live web search:\n\n${webResearch.fullAnswer}\n\nInclude accurate factual details, mechanisms, and maintain the numbered citation references.`,
+        input: [
+          ...history.slice(-10).map((item: { role: 'user' | 'assistant'; content: string }) => ({ role: item.role, content: item.content })),
+          { role: 'user', content: message }
+        ]
+      });
+
+      const synthesizedText = response.output_text || webResearch.fullAnswer;
+
+      // Save into persistent Knowledge Database Vault
+      saveKnowledge({
+        id: `kb_${Date.now()}`,
+        query: message,
+        normalizedKey: normalizeQueryKey(message),
+        topic: webResearch.title,
+        summary: webResearch.summary,
+        fullAnswer: synthesizedText,
+        sources: webResearch.sources,
+        provider: 'ai-synthesized',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        hitCount: 1
+      });
+
+      return res.json({
+        answer: synthesizedText,
+        responseId: response.id || `ai-${Date.now()}`,
+        provider: 'ai-web-synthesizer',
+        sources: webResearch.sources,
+        topic: webResearch.title
+      });
+    } catch (error) {
+      console.warn('OpenAI request failed, falling back to autonomous web synthesizer:', error);
+    }
   }
+
+  // 4. Save live web research result directly to persistent Knowledge Vault Database
+  saveKnowledge({
+    id: `kb_${Date.now()}`,
+    query: message,
+    normalizedKey: normalizeQueryKey(message),
+    topic: webResearch.title,
+    summary: webResearch.summary,
+    fullAnswer: webResearch.fullAnswer,
+    sources: webResearch.sources,
+    provider: 'live-web-search',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    hitCount: 1
+  });
+
+  return res.json({
+    answer: webResearch.fullAnswer,
+    responseId: `web-${Date.now()}`,
+    provider: 'live-web-search',
+    sources: webResearch.sources,
+    topic: webResearch.title
+  });
+});
+
+app.get('/api/knowledge-vault', (_req, res) => {
+  const entries = getAllKnowledge();
+  res.json({
+    ok: true,
+    count: entries.length,
+    entries: entries.slice(0, 50)
+  });
 });
 
 const pdfSchema = z.object({

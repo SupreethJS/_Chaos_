@@ -1,0 +1,146 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-10-15T12:36:58.629Z",
+  "entries": [
+    {
+      "id": "kb_1792067812827",
+      "query": "what is quantum computing",
+      "normalizedKey": "quantum computing",
+      "topic": "Quantum computing",
+      "summary": "A quantum computer is a computer that represents and processes information using quantum states. Quantum computations exploit phenomena such as superposition, interference, and entanglement. Quantum computers have the potential to complete some calculations exponentially faster than classical computers. For example, a large-scale quantum computer could break widely used encryption schemes and aid physicists in performing physical simulations. However, current hardware implementations of quantum computation are largely experimental and suitable for only certain specialized tasks.",
+      "fullAnswer": "### Research Synthesis: Quantum computing\n\n#### 1. Definition & Core Overview\nA quantum computer is a computer that represents and processes information using quantum states. Quantum computations exploit phenomena such as superposition, interference, and entanglement. Quantum computers have the potential to complete some calculations exponentially faster than classical computers. For example, a large-scale quantum computer could break widely used encryption schemes and aid physicists in performing physical simulations. However, current hardware implementations of quantum computation are largely experimental and suitable for only certain specialized tasks. [1]\n\n#### 3. Key Concepts & Clinical / Practical Applications\n- **Superconducting quantum computing:** quantum computing is a branch of quantum computing and solid-state physics that implements superconducting electronic circuits as qubits in a quantum [2]\n- **Timeline of quantum computing and communication:** timeline of quantum computing and communication. Erwin Schrödinger publishes a theorem setting the basis for quantum steering and the limits of quantum state [3]\n\n---\n\n### Sources & Verified Citations\n- [1] **Quantum computing (Comprehensive Overview)** (2026) – [https://en.wikipedia.org/wiki/Quantum_computing](https://en.wikipedia.org/wiki/Quantum_computing)\n- [2] **Superconducting quantum computing** (2026) – [https://en.wikipedia.org/wiki/Superconducting%20quantum%20computing](https://en.wikipedia.org/wiki/Superconducting%20quantum%20computing)\n- [3] **Timeline of quantum computing and communication** (2026) – [https://en.wikipedia.org/wiki/Timeline%20of%20quantum%20computing%20and%20communication](https://en.wikipedia.org/wiki/Timeline%20of%20quantum%20computing%20and%20communication)\n- [4] **Quantum computing** (1998) – [https://doi.org/10.1088/0034-4885/61/2/002](https://doi.org/10.1088/0034-4885/61/2/002)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Quantum computing (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Quantum_computing",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "Superconducting quantum computing",
+          "url": "https://en.wikipedia.org/wiki/Superconducting%20quantum%20computing",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "Timeline of quantum computing and communication",
+          "url": "https://en.wikipedia.org/wiki/Timeline%20of%20quantum%20computing%20and%20communication",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 4,
+          "title": "Quantum computing",
+          "url": "https://doi.org/10.1088/0034-4885/61/2/002",
+          "year": "1998",
+          "sourceName": "Reports on Progress in Physics"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T12:36:52.827Z",
+      "updatedAt": "2026-10-15T12:36:58.629Z",
+      "hitCount": 2
+    },
+    {
+      "id": "kb_1792067618392",
+      "query": "who was Nikola Tesla",
+      "normalizedKey": "nikola tesla",
+      "topic": "Nikola Tesla",
+      "summary": "Nikola Tesla was a Serbian-American engineer, futurist, and inventor. He is known for his contributions to the design of the modern alternating current (AC) electricity supply system.",
+      "fullAnswer": "### Research Synthesis: Nikola Tesla\n\n#### 1. Definition & Core Overview\nNikola Tesla was a Serbian-American engineer, futurist, and inventor. He is known for his contributions to the design of the modern alternating current (AC) electricity supply system. [1]\n\n#### 3. Key Concepts & Clinical / Practical Applications\n- **Belgrade Nikola Tesla Airport:** Belgrade Nikola Tesla Airport (Serbian: Аеродром Никола Тесла Београд / Aerodrom Nikola Tesla Beograd), or Belgrade Airport (Serbian: Аеродром Београд [2]\n- **Nikola Tesla Museum:** The Nikola Tesla Museum (Serbian: Музеј Николе Тесле, Muzej Nikole Tesle) is a science museum located in Belgrade in Serbia. It is dedicated to honoring [3]\n\n---\n\n### Sources & Verified Citations\n- [1] **Nikola Tesla (Comprehensive Overview)** (2026) – [https://en.wikipedia.org/wiki/Nikola_Tesla](https://en.wikipedia.org/wiki/Nikola_Tesla)\n- [2] **Belgrade Nikola Tesla Airport** (2026) – [https://en.wikipedia.org/wiki/Belgrade%20Nikola%20Tesla%20Airport](https://en.wikipedia.org/wiki/Belgrade%20Nikola%20Tesla%20Airport)\n- [3] **Nikola Tesla Museum** (2026) – [https://en.wikipedia.org/wiki/Nikola%20Tesla%20Museum](https://en.wikipedia.org/wiki/Nikola%20Tesla%20Museum)\n- [4] **Nikola Tesla and the Wireless Transmission of Energy** (1982) – [https://doi.org/10.1109/tpas.1982.317084](https://doi.org/10.1109/tpas.1982.317084)\n- [5] **Nikola Tesla** (2017) – [https://doi.org/10.1109/emr.2017.8048437](https://doi.org/10.1109/emr.2017.8048437)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Nikola Tesla (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Nikola_Tesla",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "Belgrade Nikola Tesla Airport",
+          "url": "https://en.wikipedia.org/wiki/Belgrade%20Nikola%20Tesla%20Airport",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "Nikola Tesla Museum",
+          "url": "https://en.wikipedia.org/wiki/Nikola%20Tesla%20Museum",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 4,
+          "title": "Nikola Tesla and the Wireless Transmission of Energy",
+          "url": "https://doi.org/10.1109/tpas.1982.317084",
+          "year": "1982",
+          "sourceName": "IEEE Transactions on Power Apparatus and Systems"
+        },
+        {
+          "id": 5,
+          "title": "Nikola Tesla",
+          "url": "https://doi.org/10.1109/emr.2017.8048437",
+          "year": "2017",
+          "sourceName": "IEEE Engineering Management Review"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T12:33:38.392Z",
+      "updatedAt": "2026-10-15T12:33:38.392Z",
+      "hitCount": 1
+    },
+    {
+      "id": "kb_1792067594051",
+      "query": "explain about antibiotics",
+      "normalizedKey": "antibiotics",
+      "topic": "Antibiotic",
+      "summary": "An antibiotic is a type of antimicrobial substance which is active against bacteria. It is the most important type of antibacterial agent for fighting bacterial infections, and antibiotic medications are widely used in the treatment and prevention of such infections. They may either kill or inhibit the growth of bacteria. A limited number of antibiotics also possess antiprotozoal activity, but antibiotics are not effective against viruses or fungi.",
+      "fullAnswer": "### Research Synthesis: Antibiotic\n\n#### 1. Definition & Core Overview\nAn antibiotic is a type of antimicrobial substance which is active against bacteria. It is the most important type of antibacterial agent for fighting bacterial infections, and antibiotic medications are widely used in the treatment and prevention of such infections. They may either kill or inhibit the growth of bacteria. A limited number of antibiotics also possess antiprotozoal activity, but antibiotics are not effective against viruses or fungi. [1]\n\n#### 3. Key Concepts & Clinical / Practical Applications\n- **Antimicrobial resistance:** certain antibiotics; for example, gram-negative bacteria are resistant to most β-lactam antibiotics due to the presence of β-lactamase. Antibiotic resistance [2]\n- **Β-Lactam antibiotic:** β-Lactam antibiotics (beta-lactam antibiotics) are antibiotics that contain a β-lactam ring in their chemical structure. This includes penicillin derivatives [3]\n\n---\n\n### Sources & Verified Citations\n- [1] **Antibiotic (Comprehensive Overview)** (2026) – [https://en.wikipedia.org/wiki/Antibiotic](https://en.wikipedia.org/wiki/Antibiotic)\n- [2] **Antimicrobial resistance** (2026) – [https://en.wikipedia.org/wiki/Antimicrobial%20resistance](https://en.wikipedia.org/wiki/Antimicrobial%20resistance)\n- [3] **Β-Lactam antibiotic** (2026) – [https://en.wikipedia.org/wiki/%CE%92-Lactam%20antibiotic](https://en.wikipedia.org/wiki/%CE%92-Lactam%20antibiotic)\n- [4] **The multifaceted roles of antibiotics and antibiotic resistance in nature** (2013) – [https://doi.org/10.3389/fmicb.2013.00047](https://doi.org/10.3389/fmicb.2013.00047)\n- [5] **Antibiotics and Antibiotic Resistance Genes in Natural Environments** (2008) – [https://doi.org/10.1126/science.1159483](https://doi.org/10.1126/science.1159483)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Antibiotic (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Antibiotic",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "Antimicrobial resistance",
+          "url": "https://en.wikipedia.org/wiki/Antimicrobial%20resistance",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "Β-Lactam antibiotic",
+          "url": "https://en.wikipedia.org/wiki/%CE%92-Lactam%20antibiotic",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 4,
+          "title": "The multifaceted roles of antibiotics and antibiotic resistance in nature",
+          "url": "https://doi.org/10.3389/fmicb.2013.00047",
+          "year": "2013",
+          "sourceName": "Frontiers in Microbiology"
+        },
+        {
+          "id": 5,
+          "title": "Antibiotics and Antibiotic Resistance Genes in Natural Environments",
+          "url": "https://doi.org/10.1126/science.1159483",
+          "year": "2008",
+          "sourceName": "Science"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T12:33:14.052Z",
+      "updatedAt": "2026-10-15T12:34:46.501Z",
+      "hitCount": 2
+    }
+  ]
+}
