@@ -5,6 +5,8 @@ node_modules/
 # Production build outputs & caches
 dist/
 **/dist/
+dev-dist/
+**/dev-dist/
 build/
 **/build/
 *.tsbuildinfo

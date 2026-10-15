@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -223,6 +226,39 @@ app.post('/api/email', async (req, res) => {
   } catch (error) {
     console.error('Email request failed; outcome may require provider reconciliation.');
     res.status(502).json({ error: 'Email outcome could not be confirmed. Check provider status before retrying to avoid duplicates.' });
+  }
+});
+
+app.post('/api/install-desktop-shortcut', (_req, res) => {
+  try {
+    const userHome = process.env.USERPROFILE || process.env.HOME || os.homedir();
+    const desktopDir = path.join(userHome, 'Desktop');
+    const appUrl = process.env.FRONTEND_ORIGIN || 'http://localhost:5173/';
+
+    if (!fs.existsSync(desktopDir)) {
+      return res.status(404).json({ ok: false, error: 'Desktop folder not found on host machine.' });
+    }
+
+    const urlFilePath = path.join(desktopDir, 'JARVIS — The Time Traveller.url');
+    const urlContent = `[InternetShortcut]\r\nURL=${appUrl}\r\nIconIndex=0\r\nIconFile=C:\\Windows\\System32\\shell32.dll\r\n[{000214A0-0000-0000-C000-000000000046}]\r\nProp3=19,11\r\n`;
+    fs.writeFileSync(urlFilePath, urlContent, 'utf-8');
+
+    const batFilePath = path.join(desktopDir, 'Launch JARVIS.bat');
+    const batContent = `@echo off\r\ntitle JARVIS - The Time Traveller\r\necho Launching JARVIS on your laptop...\r\nstart "" "${appUrl}"\r\nexit\r\n`;
+    fs.writeFileSync(batFilePath, batContent, 'utf-8');
+
+    console.log(`[Jarvis Desktop Installer] Installed shortcuts to: ${urlFilePath} and ${batFilePath}`);
+
+    return res.json({
+      ok: true,
+      message: 'JARVIS shortcut successfully placed directly on your laptop homescreen (Desktop)!',
+      path: urlFilePath,
+      batPath: batFilePath,
+      desktopDir
+    });
+  } catch (err: any) {
+    console.error('Failed to create desktop shortcut:', err);
+    return res.status(500).json({ ok: false, error: err.message || 'Could not write to desktop' });
   }
 });
 

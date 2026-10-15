@@ -7,16 +7,34 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: [],
+      devOptions: {
+        enabled: true
+      },
+      includeAssets: ['favicon.png', 'jarvis-logo.png', 'pwa-192.png', 'pwa-512.png'],
       manifest: {
-        name: 'Jarvis the Time Traveller',
-        short_name: 'Jarvis',
-        description: 'Jarvis the Time Traveller - AI agent workspace',
-        theme_color: '#101827',
-        background_color: '#f5f7fb',
+        name: 'JARVIS — The Time Traveller',
+        short_name: 'JARVIS',
+        description: 'JARVIS — The Time Traveller: Autonomous Cross-App Agentic Workspace',
+        theme_color: '#1e1b4b',
+        background_color: '#f8fafc',
         display: 'standalone',
+        orientation: 'portrait-primary',
+        scope: '/',
         start_url: '/',
-        icons: []
+        icons: [
+          {
+            src: '/pwa-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable'
+          },
+          {
+            src: '/pwa-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ]
       }
     })
   ],

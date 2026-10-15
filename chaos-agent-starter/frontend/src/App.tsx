@@ -1760,6 +1760,7 @@ export default function App() {
             userName={userName}
             activeViewportMode={activeViewportMode}
             onSetViewportMode={(mode) => setActiveViewportMode(mode)}
+            backendUrl={API}
           />
         )}
       </div>

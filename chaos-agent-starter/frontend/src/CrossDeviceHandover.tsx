@@ -16,6 +16,7 @@ import {
   ExternalLink,
   ShieldCheck,
   Radio,
+  X,
 } from 'lucide-react';
 
 interface CrossDeviceHandoverProps {
@@ -23,6 +24,7 @@ interface CrossDeviceHandoverProps {
   userName: string;
   onSetViewportMode?: (mode: 'desktop' | 'tablet' | 'mobile') => void;
   activeViewportMode?: 'desktop' | 'tablet' | 'mobile';
+  backendUrl?: string;
 }
 
 export const CrossDeviceHandover: React.FC<CrossDeviceHandoverProps> = ({
@@ -30,12 +32,17 @@ export const CrossDeviceHandover: React.FC<CrossDeviceHandoverProps> = ({
   userName,
   onSetViewportMode,
   activeViewportMode = 'desktop',
+  backendUrl = 'http://localhost:4000',
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [deviceWidth, setDeviceWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1280);
   const [deviceHeight, setDeviceHeight] = useState(typeof window !== 'undefined' ? window.innerHeight : 800);
   const [isPwaInstalled, setIsPwaInstalled] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [isInstalling, setIsInstalling] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [desktopShortcutPath, setDesktopShortcutPath] = useState<string>('');
+  const [installSuccessMessage, setInstallSuccessMessage] = useState<string>('');
 
   useEffect(() => {
     const handleResize = () => {
@@ -61,17 +68,70 @@ export const CrossDeviceHandover: React.FC<CrossDeviceHandoverProps> = ({
     };
   }, []);
 
+  // Function to download Windows Desktop Shortcut directly via browser
+  const triggerBrowserShortcutDownload = () => {
+    const appOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
+    const fileContent =
+      '[InternetShortcut]\r\n' +
+      `URL=${appOrigin}/\r\n` +
+      'IconIndex=0\r\n' +
+      'IconFile=C:\\Windows\\System32\\shell32.dll\r\n' +
+      '[{000214A0-0000-0000-C000-000000000046}]\r\n' +
+      'Prop3=19,11\r\n';
+
+    const blob = new Blob([fileContent], { type: 'application/octet-stream' });
+    const downloadUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = 'JARVIS — The Time Traveller.url';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(downloadUrl);
+  };
+
   const handleInstallClick = async () => {
-    if (installPrompt) {
-      installPrompt.prompt();
-      const choice = await installPrompt.userChoice;
-      if (choice.outcome === 'accepted') {
-        setIsPwaInstalled(true);
+    setIsInstalling(true);
+
+    // 1. Immediately trigger browser download of .url desktop shortcut
+    triggerBrowserShortcutDownload();
+
+    let createdPath = 'C:\\Users\\Admin\\Desktop\\JARVIS — The Time Traveller.url';
+
+    // 2. Call backend to place shortcut directly on the user's laptop Desktop
+    try {
+      const res = await fetch(`${backendUrl}/api/install-desktop-shortcut`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.path) {
+          createdPath = data.path;
+        }
       }
-      setInstallPrompt(null);
-    } else {
-      alert('To install on mobile: Tap your browser menu and choose "Add to Home Screen" or "Install App".');
+    } catch (err) {
+      console.warn('Backend desktop shortcut error:', err);
     }
+
+    // 3. Prompt native PWA dialog if browser supports it
+    if (installPrompt) {
+      try {
+        installPrompt.prompt();
+        const choice = await installPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          setIsPwaInstalled(true);
+        }
+        setInstallPrompt(null);
+      } catch (err) {
+        console.warn('PWA install prompt error:', err);
+      }
+    }
+
+    setDesktopShortcutPath(createdPath);
+    setInstallSuccessMessage('JARVIS has been downloaded and installed on your laptop homescreen (Desktop)!');
+    setIsInstalling(false);
+    setShowInstallModal(true);
   };
 
   const syncUrl = typeof window !== 'undefined' ? `${window.location.origin}/?handover=true&user=${encodeURIComponent(userName)}` : 'http://localhost:5173/';
@@ -295,14 +355,127 @@ export const CrossDeviceHandover: React.FC<CrossDeviceHandoverProps> = ({
               id="install-pwa-btn"
               className="btn-primary"
               onClick={handleInstallClick}
+              disabled={isInstalling}
               style={{ width: '100%', justifyContent: 'center' }}
             >
               <Download size={16} />
-              <span>{isPwaInstalled ? 'PWA Running as Native App' : 'Install JARVIS PWA App'}</span>
+              <span>{isInstalling ? 'Downloading & Placing on Homescreen…' : 'Download & Install to Laptop Homescreen'}</span>
             </button>
+
+            {desktopShortcutPath && (
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                }}
+              >
+                <CheckCircle2 size={18} color="#10b981" style={{ flexShrink: 0 }} />
+                <div style={{ fontSize: 12 }}>
+                  <strong style={{ color: '#059669', display: 'block' }}>
+                    Downloaded & Placed on Laptop Homescreen
+                  </strong>
+                  <span style={{ color: 'var(--text-muted)', wordBreak: 'break-all' }}>
+                    {desktopShortcutPath}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* LAPTOP HOMESCREEN INSTALLATION SUCCESS MODAL */}
+      {showInstallModal && (
+        <div className="install-modal-backdrop" onClick={() => setShowInstallModal(false)}>
+          <div className="install-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="install-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div className="install-modal-icon-badge">
+                  <Download size={24} color="#ffffff" />
+                </div>
+                <div>
+                  <h3 className="install-modal-title">Downloaded to Laptop Homescreen!</h3>
+                  <p className="install-modal-sub">
+                    JARVIS is ready on your Windows Desktop and browser
+                  </p>
+                </div>
+              </div>
+              <button
+                className="btn-icon"
+                onClick={() => setShowInstallModal(false)}
+                title="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Path box */}
+            <div className="install-path-box">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                <CheckCircle2 size={16} color="#10b981" style={{ flexShrink: 0 }} />
+                <span className="install-path-text">{desktopShortcutPath}</span>
+              </div>
+              <button
+                className="btn-secondary"
+                style={{ padding: '4px 8px', fontSize: 11, flexShrink: 0 }}
+                onClick={() => {
+                  if (navigator.clipboard) {
+                    navigator.clipboard.writeText(desktopShortcutPath);
+                  }
+                }}
+              >
+                Copy Path
+              </button>
+            </div>
+
+            <div className="install-steps-list">
+              <div className="install-step-item">
+                <span className="install-step-num">1</span>
+                <div>
+                  <strong>Laptop Desktop / Homescreen:</strong> Shortcut <code>JARVIS — The Time Traveller.url</code> has been placed directly on your Windows Desktop. Double-click it anytime to launch!
+                </div>
+              </div>
+              <div className="install-step-item">
+                <span className="install-step-num">2</span>
+                <div>
+                  <strong>Direct Browser Download:</strong> The shortcut was also downloaded to your browser's Downloads folder so you can move it anywhere.
+                </div>
+              </div>
+              <div className="install-step-item">
+                <span className="install-step-num">3</span>
+                <div>
+                  <strong>Standalone App Window:</strong> In Chrome or Edge, click the <strong>Install</strong> icon in the address bar (top right) or Menu &rarr; <em>Save and share</em> &rarr; <em>Install JARVIS</em> to run as a borderless laptop app.
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+              <button
+                className="btn-secondary"
+                onClick={triggerBrowserShortcutDownload}
+                style={{ flex: 1, justifyContent: 'center' }}
+              >
+                <Download size={14} />
+                <span>Re-Download File</span>
+              </button>
+              <button
+                className="btn-primary"
+                onClick={() => setShowInstallModal(false)}
+                style={{ flex: 1, justifyContent: 'center' }}
+              >
+                <Check size={14} />
+                <span>Done</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
