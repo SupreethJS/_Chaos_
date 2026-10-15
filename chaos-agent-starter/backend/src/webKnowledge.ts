@@ -23,6 +23,38 @@ export function extractCoreQuery(raw: string): string {
 }
 
 /**
+ * Removes raw markdown artifacts (hashtags, asterisks, divider hyphens)
+ * to deliver clean, natural text to the user.
+ */
+export function cleanSpecialCharacters(text: string): string {
+  if (!text) return '';
+  return text
+    // 1. Remove markdown headers: '# Header', '## Header', '### Header', '#### Header' -> 'Header'
+    .replace(/^#{1,6}\s+/gm, '')
+    // 2. Remove any remaining line-leading or isolated hashtags: '# ' -> ''
+    .replace(/(?:^|\s)#{1,6}(?:\s|$)/gm, ' ')
+    // 3. Remove bold/italic asterisks: '***text***' -> 'text', '**text**' -> 'text', '*text*' -> 'text'
+    .replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1')
+    // 4. Remove all remaining asterisks
+    .replace(/\*/g, '')
+    // 5. Remove markdown bold/italic underscores: '__text__' or '_text_' -> 'text'
+    .replace(/_{1,2}([^_]+)_{1,2}/g, '$1')
+    // 6. Remove horizontal rules: '---', '***', '___'
+    .replace(/^\s*[-*_]{3,}\s*$/gm, '')
+    // 7. Clean markdown links: '[url](url)' -> 'url', '[title](url)' -> 'title (url)'
+    .replace(/\[(https?:\/\/[^\]]+)\]\(\1\)/g, '$1')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '$1 ($2)')
+    // 8. Clean backticks
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/`/g, '')
+    // 9. Clean bullet dashes: '- ' -> '• '
+    .replace(/^[-]\s+/gm, '• ')
+    // 10. Collapse excessive blank lines
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
  * Live Web Knowledge Fetcher: Queries Wikipedia, DuckDuckGo, and OpenAlex
  * to compile actual facts, definitions, mechanisms, and real citations.
  */
@@ -162,31 +194,31 @@ export async function fetchLiveWebResearch(userQuery: string): Promise<WebResear
   const mainDefinition = primaryExtract || ddgAbstract || `Detailed information retrieved for ${primaryTitle}.`;
 
   // --------------------------------------------------------------------------
-  // 4. STRUCTURE FACTUAL SYNTHESIS MARKDOWN
+  // 4. STRUCTURE CLEAN FACTUAL SYNTHESIS (NO HASHTAGS OR ASTERISKS)
   // --------------------------------------------------------------------------
   const paragraphs = mainDefinition.split('\n\n').filter((p) => p.trim().length > 0);
-  const leadParagraph = paragraphs[0] || mainDefinition;
-  const secondaryParagraph = paragraphs.slice(1).join('\n\n');
+  const leadParagraph = cleanSpecialCharacters(paragraphs[0] || mainDefinition);
+  const secondaryParagraph = cleanSpecialCharacters(paragraphs.slice(1).join('\n\n'));
 
-  let answer = `### Research Synthesis: ${primaryTitle}\n\n`;
-  answer += `#### 1. Definition & Core Overview\n`;
+  let answer = `Research Synthesis: ${primaryTitle}\n\n`;
+  answer += `1. Definition & Core Overview\n`;
   answer += `${leadParagraph} [1]\n\n`;
 
   if (secondaryParagraph) {
-    answer += `#### 2. Mechanisms & Biological / Technical Principles\n`;
+    answer += `2. Mechanisms & Core Principles\n`;
     answer += `${secondaryParagraph} [1]\n\n`;
   }
 
   if (keyPoints.length > 0) {
-    answer += `#### 3. Key Concepts & Clinical / Practical Applications\n`;
+    answer += `3. Key Concepts & Practical Applications\n`;
     keyPoints.forEach((kp, idx) => {
-      answer += `- ${kp} [${idx + 2}]\n`;
+      const cleanKp = cleanSpecialCharacters(kp);
+      answer += `• ${cleanKp} [${idx + 2}]\n`;
     });
     answer += `\n`;
   }
 
-  answer += `---\n\n`;
-  answer += `### Sources & Verified Citations\n`;
+  answer += `Sources & Verified Citations:\n`;
   if (sources.length === 0) {
     sources.push({
       id: 1,
@@ -198,14 +230,14 @@ export async function fetchLiveWebResearch(userQuery: string): Promise<WebResear
   }
 
   sources.forEach((s) => {
-    answer += `- [${s.id}] **${s.title}** (${s.year || '2025'}) – [${s.url}](${s.url})\n`;
+    answer += `• [${s.id}] ${s.title} (${s.year || '2025'}) – ${s.url}\n`;
   });
 
   return {
     title: primaryTitle,
     topic: searchTopic,
     summary: leadParagraph,
-    fullAnswer: answer,
+    fullAnswer: cleanSpecialCharacters(answer),
     sources,
   };
 }

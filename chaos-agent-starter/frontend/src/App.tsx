@@ -308,6 +308,38 @@ export default function App() {
   // ==========================================
   // MODULE 2: Main AI Workspace Logic & Voice-Over
   // ==========================================
+  /**
+   * Removes markdown special characters (hashtags, asterisks, dividers, etc.)
+   * so the user receives a clean, readable answer.
+   */
+  const cleanAnswerText = (text: string): string => {
+    if (!text) return '';
+    return text
+      // 1. Remove markdown headers: '#### Research Synthesis...' -> 'Research Synthesis...'
+      .replace(/^#{1,6}\s+/gm, '')
+      // 2. Remove isolated or remaining hashtags: '# ' -> ''
+      .replace(/(?:^|\s)#{1,6}(?:\s|$)/gm, ' ')
+      // 3. Remove bold/italic markdown formatting: '***text***', '**text**', '*text*'
+      .replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1')
+      // 4. Remove all remaining asterisks: '*'
+      .replace(/\*/g, '')
+      // 5. Remove underscores used for bold/italics
+      .replace(/_{1,2}([^_]+)_{1,2}/g, '$1')
+      // 6. Remove horizontal dividers: '---', '***', '___'
+      .replace(/^\s*[-*_]{3,}\s*$/gm, '')
+      // 7. Clean markdown links: '[url](url)' -> 'url', '[title](url)' -> 'title (url)'
+      .replace(/\[(https?:\/\/[^\]]+)\]\(\1\)/g, '$1')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '$1 ($2)')
+      // 8. Clean backticks
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/`/g, '')
+      // 9. Clean bullet dashes: '- ' -> '• '
+      .replace(/^[-]\s+/gm, '• ')
+      // 10. Collapse excessive blank lines
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  };
+
   const stopVoiceOver = () => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -320,21 +352,17 @@ export default function App() {
     try {
       stopVoiceOver();
 
-      // Clean markdown, headers, URLs, and citation brackets for natural, pleasant speech
-      const clean = text
-        .replace(/^###\s+Research Synthesis:\s*.*$/gim, '')
-        .replace(/^#{1,6}\s+.*$/gim, '')
-        .replace(/\[\d+\]/g, '')
-        .replace(/^---\s*$/gim, '')
-        .replace(/\*\*(.*?)\*\*/g, '$1')
-        .replace(/\*(.*?)\*/g, '$1')
-        .replace(/`([^`]+)`/g, '$1')
+      // Clean special characters, hashtags, asterisks, URLs, and citation brackets for natural, pleasant speech
+      const cleaned = cleanAnswerText(text)
         .replace(/Sources & Verified Citations[\s\S]*$/i, '')
-        .replace(/\n{2,}/g, ' ')
+        .replace(/\[\d+\]/g, '')
+        .replace(/https?:\/\/\S+/g, '')
+        .replace(/[•]/g, '')
+        .replace(/\n+/g, ' ')
         .trim();
 
       // Extract core explanatory sentences (up to ~360 chars)
-      const sentences = clean.split(/(?<=[.?!])\s+/);
+      const sentences = cleaned.split(/(?<=[.?!])\s+/);
       const spoken = sentences.slice(0, 4).join(' ').slice(0, 360).trim();
 
       if (!spoken) return;
@@ -436,7 +464,7 @@ export default function App() {
       const assistantMsg: Message = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: data.answer || 'Research synthesis completed.',
+        content: cleanAnswerText(data.answer || 'Research synthesis completed.'),
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         sources: data.sources || [
           { id: 1, title: 'National Renewable Energy Laboratory (NREL)', year: '2025', url: 'https://www.nrel.gov' },
@@ -471,7 +499,7 @@ export default function App() {
   };
 
   const copyToClipboard = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(cleanAnswerText(text));
     setCopiedMsgId(id);
     setTimeout(() => setCopiedMsgId(null), 2000);
   };
@@ -479,7 +507,7 @@ export default function App() {
   // Bridge action: message -> Document Studio
   const handleTransferToStudio = (msg: Message) => {
     setDocTitle(currentConversation?.title || 'Research Document');
-    setDocContent(msg.content);
+    setDocContent(cleanAnswerText(msg.content));
     setDocValidationStatus('draft');
     setValidationMessages([]);
     setActiveTab('studio');
@@ -488,7 +516,7 @@ export default function App() {
   // Bridge action: message -> Email Composer
   const handleTransferToEmail = (msg: Message) => {
     setEmailSubject(`Research Summary: ${currentConversation?.title || 'Technical Findings'}`);
-    setEmailBody(msg.content);
+    setEmailBody(cleanAnswerText(msg.content));
     setEmailProviderStatus(null);
     setActiveTab('email');
   };
@@ -1031,7 +1059,9 @@ export default function App() {
                         <span className="msg-time">{msg.timestamp}</span>
                       </div>
                       <div className="msg-bubble">
-                        <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+                        <div style={{ whiteSpace: 'pre-wrap' }}>
+                          {msg.role === 'assistant' ? cleanAnswerText(msg.content) : msg.content}
+                        </div>
 
                         {/* Source Citations */}
                         {msg.sources && msg.sources.length > 0 && (
@@ -1218,7 +1248,7 @@ export default function App() {
                   <div className="history-group-title">{groupName}</div>
                   {convList.map(c => {
                     const isSelected = c.id === currentConvId;
-                    const previewText = c.messages.slice(-1)[0]?.content || 'Empty conversation';
+                    const previewText = cleanAnswerText(c.messages.slice(-1)[0]?.content || 'Empty conversation');
                     return (
                       <div
                         key={c.id}
@@ -1305,7 +1335,7 @@ export default function App() {
                     const conv = conversations.find(c => c.id === e.target.value);
                     if (conv) {
                       setDocTitle(conv.title);
-                      setDocContent(conv.messages.map(m => `${m.role.toUpperCase()}:\n${m.content}`).join('\n\n'));
+                      setDocContent(conv.messages.map(m => `${m.role.toUpperCase()}:\n${cleanAnswerText(m.content)}`).join('\n\n'));
                       setDocValidationStatus('draft');
                     }
                   }}
@@ -1457,7 +1487,7 @@ export default function App() {
                     if (conv) {
                       setEmailSubject(`Briefing: ${conv.title}`);
                       const assistantText = conv.messages.filter(m => m.role === 'assistant').slice(-1)[0]?.content || '';
-                      setEmailBody(assistantText);
+                      setEmailBody(cleanAnswerText(assistantText));
                     }
                   }}
                   defaultValue={currentConvId}

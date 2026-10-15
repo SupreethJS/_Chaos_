@@ -10,7 +10,7 @@ import OpenAI from 'openai';
 import PDFDocument from 'pdfkit';
 import { Resend } from 'resend';
 import { findKnowledge, saveKnowledge, getAllKnowledge, normalizeQueryKey } from './knowledgeDatabase.js';
-import { fetchLiveWebResearch } from './webKnowledge.js';
+import { fetchLiveWebResearch, cleanSpecialCharacters } from './webKnowledge.js';
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
@@ -91,66 +91,58 @@ function generateResearchSynthesis(query: string): string {
   const lower = query.toLowerCase();
 
   if (lower.includes('renewable') || lower.includes('energy') || lower.includes('solar') || lower.includes('wind') || lower.includes('battery')) {
-    return `### Research Brief: Breakthrough Advances in Renewable Energy (2025–2026)
+    return cleanSpecialCharacters(`Research Brief: Breakthrough Advances in Renewable Energy (2025–2026)
 
-#### Executive Summary
+Executive Summary:
 Recent progress in renewable energy has accelerated dramatically, driven by tandem photovoltaic breakthroughs, commercial deployment of sodium-ion and iron-air grid storage, and floating offshore turbine deployments.
 
----
+1. Next-Generation Photovoltaics (Perovskite-Silicon Tandem Cells):
+• Efficiency Milestone: Commercial-grade perovskite-on-silicon tandem cells have achieved laboratory conversion efficiencies exceeding 33.9%, significantly eclipsing the theoretical Shockley-Queisser limit of standard silicon wafers (29.4%) [1].
+• Durability & Encapsulation: Accelerated aging trials demonstrate over 85% capacity retention after 5,000 thermal cycles, resolving previous moisture degradation vulnerabilities [2].
 
-#### 1. Next-Generation Photovoltaics (Perovskite-Silicon Tandem Cells)
-- **Efficiency Milestone:** Commercial-grade perovskite-on-silicon tandem cells have achieved laboratory conversion efficiencies exceeding **33.9%**, significantly eclipsing the theoretical Shockley-Queisser limit of standard silicon wafers (29.4%) [1].
-- **Durability & Encapsulation:** Accelerated aging trials demonstrate over 85% capacity retention after 5,000 thermal cycles, resolving previous moisture degradation vulnerabilities [2].
+2. Long-Duration Grid-Scale Energy Storage:
+• Sodium-Ion Batteries (SIBs): Commercial production has surpassed 40 GWh globally, offering supply-chain independence from lithium/cobalt and superior cold-weather discharge rates (-20°C to 60°C) [3].
+• Iron-Air & Flow Batteries: 100-hour multi-day discharge pilot systems have entered operational utility service, stabilizing intermittent wind and solar feeds [3].
 
-#### 2. Long-Duration Grid-Scale Energy Storage
-- **Sodium-Ion Batteries (SIBs):** Commercial production has surpassed 40 GWh globally, offering supply-chain independence from lithium/cobalt and superior cold-weather discharge rates (-20°C to 60°C) [3].
-- **Iron-Air & Flow Batteries:** 100-hour multi-day discharge pilot systems have entered operational utility service, stabilizing intermittent wind and solar feeds [3].
+3. Floating Offshore Wind (FOWT) Innovations:
+• Ultra-Deepwater Mooring: Synthetic polymer tethers paired with automated ballast systems have lowered Levelized Cost of Energy (LCOE) to under $68/MWh in high-depth sea basins [4].
+• Dual-Rotor & Vertical-Axis Designs: Reductions in wake interference have elevated turbine array energy harvest by 14–18% [4].
 
-#### 3. Floating Offshore Wind (FOWT) Innovations
-- **Ultra-Deepwater Mooring:** Synthetic polymer tethers paired with automated ballast systems have lowered Levelized Cost of Energy (LCOE) to under $68/MWh in high-depth sea basins [4].
-- **Dual-Rotor & Vertical-Axis Designs:** Reductions in wake interference have elevated turbine array energy harvest by 14–18% [4].
-
----
-
-### Sources & Academic Citations
-- [1] National Renewable Energy Laboratory (NREL) – "Best Research-Cell Efficiency Chart & Tandem Roadmap" (2025) - https://www.nrel.gov/pv/cell-efficiency.html
-- [2] Nature Energy – "Operational Stability and Scaling of Commercial Perovskite Modules" (2025) - https://www.nature.com/nenergy
-- [3] International Energy Agency (IEA) – "Global Energy Storage and Grid Integration Review" (2025) - https://www.iea.org/reports/energy-storage
-- [4] MIT Energy Initiative (MITEI) – "Economics and Deployment of Floating Offshore Wind" (2025) - https://energy.mit.edu/research`;
+Sources & Academic Citations:
+• [1] National Renewable Energy Laboratory (NREL) – "Best Research-Cell Efficiency Chart & Tandem Roadmap" (2025) - https://www.nrel.gov/pv/cell-efficiency.html
+• [2] Nature Energy – "Operational Stability and Scaling of Commercial Perovskite Modules" (2025) - https://www.nature.com/nenergy
+• [3] International Energy Agency (IEA) – "Global Energy Storage and Grid Integration Review" (2025) - https://www.iea.org/reports/energy-storage
+• [4] MIT Energy Initiative (MITEI) – "Economics and Deployment of Floating Offshore Wind" (2025) - https://energy.mit.edu/research`);
   }
 
   if (lower.includes('agent') || lower.includes('ai') || lower.includes('llm') || lower.includes('model')) {
-    return `### Research Synthesis: Autonomous AI Agent Architecture & Safety Standards
+    return cleanSpecialCharacters(`Research Synthesis: Autonomous AI Agent Architecture & Safety Standards
 
-#### Key Findings
-1. **Multi-Agent Orchestration Frameworks:** Modern agentic workflows have converged on hierarchical planning with isolated tool verification sandboxes [1].
-2. **Context Compression & Retrieval:** Hybrid vector-graph hybrid index mechanisms have cut context window latency by 45% while maintaining semantic recall [2].
-3. **Deterministic Tool Gates:** Production systems require explicit user authorization for external side effects (e.g., email dispatch, file deletion, financial transactions) [3].
+Key Findings:
+1. Multi-Agent Orchestration Frameworks: Modern agentic workflows have converged on hierarchical planning with isolated tool verification sandboxes [1].
+2. Context Compression & Retrieval: Hybrid vector-graph hybrid index mechanisms have cut context window latency by 45% while maintaining semantic recall [2].
+3. Deterministic Tool Gates: Production systems require explicit user authorization for external side effects (such as email dispatch, file deletion, and financial transactions) [3].
 
----
-
-### Sources & Academic Citations
-- [1] IEEE Transactions on Artificial Intelligence – "Verifiable Multi-Agent Coordination Protocols" (2025)
-- [2] ACM Computing Surveys – "Stateful Memory and Knowledge Retrieval in Large Language Agents" (2025)
-- [3] NIST AI Safety Institute – "Guidelines for Safe Deployment of Autonomous Agentic Tools" (2025)`;
+Sources & Academic Citations:
+• [1] IEEE Transactions on Artificial Intelligence – "Verifiable Multi-Agent Coordination Protocols" (2025)
+• [2] ACM Computing Surveys – "Stateful Memory and Knowledge Retrieval in Large Language Agents" (2025)
+• [3] NIST AI Safety Institute – "Guidelines for Safe Deployment of Autonomous Agentic Tools" (2025)`);
   }
 
-  return `### Research Synthesis: ${query.slice(0, 70)}
+  return cleanSpecialCharacters(`Research Synthesis: ${query.slice(0, 70)}
 
-#### Comprehensive Overview
+Comprehensive Overview:
 A rigorous analysis of current literature and technical standards indicates rapid convergence on scalable, verified implementations within this domain.
 
-#### Critical Observations
-1. **Empirical Benchmarks:** Recent implementations demonstrate improved reliability through automated self-correction loops and constraint validation.
-2. **Operational Efficiency:** System overhead has been reduced through standardized schema validation and structured error recovery policies.
-3. **Adoption & Standards:** Institutional bodies have established baseline reproducibility and audit requirements for production readiness.
+Critical Observations:
+1. Empirical Benchmarks: Recent implementations demonstrate improved reliability through automated self-correction loops and constraint validation.
+2. Operational Efficiency: System overhead has been reduced through standardized schema validation and structured error recovery policies.
+3. Adoption & Standards: Institutional bodies have established baseline reproducibility and audit requirements for production readiness.
 
----
-
-### Sources & Academic Citations
-- [1] IEEE Computer Society – "Architectural Best Practices for Resilient Systems" (2025)
-- [2] Nature Machine Intelligence – "Verified Protocols in Complex Adaptive Workflows" (2025)
-- [3] MIT Technology Review – "Emerging Paradigms in Enterprise Technology" (2025)`;
+Sources & Academic Citations:
+• [1] IEEE Computer Society – "Architectural Best Practices for Resilient Systems" (2025)
+• [2] Nature Machine Intelligence – "Verified Protocols in Complex Adaptive Workflows" (2025)
+• [3] MIT Technology Review – "Emerging Paradigms in Enterprise Technology" (2025)`);
 }
 
 app.post('/api/chat', async (req, res) => {
@@ -163,8 +155,9 @@ app.post('/api/chat', async (req, res) => {
   const cached = findKnowledge(message);
   if (cached) {
     console.log(`[Knowledge Vault] Cache hit for "${message}" -> ${cached.topic}`);
+    const cleanAnswer = cleanSpecialCharacters(cached.fullAnswer);
     return res.json({
-      answer: cached.fullAnswer,
+      answer: cleanAnswer,
       responseId: `vault-${cached.id}`,
       provider: 'cached-web-vault',
       sources: cached.sources,
@@ -180,7 +173,7 @@ app.post('/api/chat', async (req, res) => {
     webResearch = await fetchLiveWebResearch(message);
   } catch (err) {
     console.warn('Web research failed, using emergency fallback:', err);
-    const fallbackAnswer = generateResearchSynthesis(message);
+    const fallbackAnswer = cleanSpecialCharacters(generateResearchSynthesis(message));
     return res.json({
       answer: fallbackAnswer,
       responseId: `local-res-${Date.now()}`,
@@ -194,14 +187,14 @@ app.post('/api/chat', async (req, res) => {
     try {
       const response = await openai.responses.create({
         model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
-        instructions: `You are JARVIS — The Time Traveller, an autonomous AI research and temporal analysis assistant. Answer the user question using these verified real-world facts and citations retrieved from live web search:\n\n${webResearch.fullAnswer}\n\nInclude accurate factual details, mechanisms, and maintain the numbered citation references.`,
+        instructions: `You are JARVIS — The Time Traveller, an autonomous AI research and temporal analysis assistant. Answer the user question cleanly and professionally using these verified real-world facts and citations retrieved from live web search:\n\n${webResearch.fullAnswer}\n\nIMPORTANT FORMATTING RULES: Do NOT use hashtags (#, ##, ###, ####), do NOT use asterisks (*, **), and do NOT use dashed divider lines (---). Use clean plain text headers, clear numbering, and clean bullet points (•). Include accurate factual details, mechanisms, and maintain the numbered citation references.`,
         input: [
           ...history.slice(-10).map((item: { role: 'user' | 'assistant'; content: string }) => ({ role: item.role, content: item.content })),
           { role: 'user', content: message }
         ]
       });
 
-      const synthesizedText = response.output_text || webResearch.fullAnswer;
+      const synthesizedText = cleanSpecialCharacters(response.output_text || webResearch.fullAnswer);
 
       // Save into persistent Knowledge Database Vault
       saveKnowledge({
@@ -209,7 +202,7 @@ app.post('/api/chat', async (req, res) => {
         query: message,
         normalizedKey: normalizeQueryKey(message),
         topic: webResearch.title,
-        summary: webResearch.summary,
+        summary: cleanSpecialCharacters(webResearch.summary),
         fullAnswer: synthesizedText,
         sources: webResearch.sources,
         provider: 'ai-synthesized',
@@ -231,13 +224,14 @@ app.post('/api/chat', async (req, res) => {
   }
 
   // 4. Save live web research result directly to persistent Knowledge Vault Database
+  const cleanWebAnswer = cleanSpecialCharacters(webResearch.fullAnswer);
   saveKnowledge({
     id: `kb_${Date.now()}`,
     query: message,
     normalizedKey: normalizeQueryKey(message),
     topic: webResearch.title,
-    summary: webResearch.summary,
-    fullAnswer: webResearch.fullAnswer,
+    summary: cleanSpecialCharacters(webResearch.summary),
+    fullAnswer: cleanWebAnswer,
     sources: webResearch.sources,
     provider: 'live-web-search',
     createdAt: new Date().toISOString(),
@@ -246,7 +240,7 @@ app.post('/api/chat', async (req, res) => {
   });
 
   return res.json({
-    answer: webResearch.fullAnswer,
+    answer: cleanWebAnswer,
     responseId: `web-${Date.now()}`,
     provider: 'live-web-search',
     sources: webResearch.sources,

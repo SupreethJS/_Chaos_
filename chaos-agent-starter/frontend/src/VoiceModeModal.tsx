@@ -41,21 +41,32 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
   // Clean raw markdown syntax for voice display and speech synthesis
   const cleanVoiceDisplayText = (text: string): { display: string; speech: string } => {
     if (!text) return { display: '', speech: '' };
-    let clean = text
-      .replace(/^###\s+Research Synthesis:\s*.*$/gim, '')
-      .replace(/^#{1,6}\s+.*$/gim, '')
-      .replace(/\[\d+\]/g, '')
-      .replace(/^---\s*$/gim, '')
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/\*(.*?)\*/g, '$1')
+    const display = text
+      .replace(/^#{1,6}\s+/gm, '')
+      .replace(/(?:^|\s)#{1,6}(?:\s|$)/gm, ' ')
+      .replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1')
+      .replace(/\*/g, '')
+      .replace(/_{1,2}([^_]+)_{1,2}/g, '$1')
+      .replace(/^\s*[-*_]{3,}\s*$/gm, '')
+      .replace(/\[(https?:\/\/[^\]]+)\]\(\1\)/g, '$1')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '$1 ($2)')
       .replace(/`([^`]+)`/g, '$1')
-      .replace(/Sources & Verified Citations[\s\S]*$/i, '')
-      .replace(/\n{2,}/g, '\n\n')
+      .replace(/`/g, '')
+      .replace(/^[-]\s+/gm, '• ')
+      .replace(/\n{3,}/g, '\n\n')
       .trim();
 
-    const sentences = clean.split(/(?<=[.?!])\s+/);
+    const speechClean = display
+      .replace(/Sources & Verified Citations[\s\S]*$/i, '')
+      .replace(/\[\d+\]/g, '')
+      .replace(/https?:\/\/\S+/g, '')
+      .replace(/[•]/g, '')
+      .replace(/\n+/g, ' ')
+      .trim();
+
+    const sentences = speechClean.split(/(?<=[.?!])\s+/);
     const speech = sentences.slice(0, 3).join(' ').slice(0, 320).trim();
-    return { display: clean || text, speech };
+    return { display, speech };
   };
 
   // Safe mic control helpers to prevent echo loop & InvalidStateError
