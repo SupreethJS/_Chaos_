@@ -1,0 +1,19 @@
+{
+  "name": "chaos-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "chaos-agent-starter/frontend",
+    "chaos-agent-starter/backend"
+  ],
+  "scripts": {
+    "dev:frontend": "npm --prefix chaos-agent-starter/frontend run dev",
+    "dev:backend": "npm --prefix chaos-agent-starter/backend run dev",
+    "build:frontend": "npm --prefix chaos-agent-starter/frontend run build",
+    "build:backend": "npm --prefix chaos-agent-starter/backend run build"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0"
+  }
+}

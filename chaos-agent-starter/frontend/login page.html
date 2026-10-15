@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+  <meta content="mobile_stack" name="shell-type"/>
+  <title>Sign In & Register | Jarvis the Time Traveller</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4f46e5",
+            "primary-hover": "#4338ca",
+            "primary-container": "#e0e7ff",
+            "on-primary": "#ffffff",
+            "on-primary-container": "#1e1b4b",
+            "secondary": "#059669",
+            "secondary-container": "#d1fae5",
+            "on-secondary-container": "#064e3b",
+            "surface": "#f8fafc",
+            "surface-container": "#f1f5f9",
+            "surface-container-high": "#e2e8f0",
+            "surface-card": "#ffffff",
+            "on-surface": "#0f172a",
+            "on-surface-variant": "#64748b",
+            "outline": "#94a3b8",
+            "outline-variant": "#cbd5e1",
+            "error": "#ef4444",
+            "error-container": "#fee2e2"
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @layer base {
+      html, body {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        overscroll-behavior: none;
+        font-family: 'Inter', sans-serif;
+      }
+      .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 16px);
+      }
+      .pt-safe {
+        padding-top: env(safe-area-inset-top, 16px);
+      }
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      user-select: none;
+    }
+    .symbol-filled {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface flex flex-col min-h-screen selection:bg-primary selection:text-on-primary">
+  <!-- Top Navigation Header -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-white/85 backdrop-blur-xl border-b border-surface-container-high/80 pt-safe">
+    <div class="max-w-[480px] mx-auto h-16 px-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button id="back-btn" aria-label="Go back" class="w-10 h-10 flex items-center justify-center rounded-xl text-on-surface hover:bg-surface-container transition-colors" type="button">
+          <span class="material-symbols-outlined text-[22px]">arrow_back</span>
+        </button>
+        <!-- Custom Clean Inline SVG Brand Logo -->
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-primary to-indigo-400 flex items-center justify-center shadow-sm shadow-primary/30">
+            <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
+          </div>
+          <span id="header-title" class="text-base font-semibold text-on-surface tracking-tight">Jarvis the Time Traveller</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container text-xs font-medium">
+          <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+          256-bit AES
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 flex flex-col relative w-full pt-20 pb-safe px-4">
+    <div class="flex flex-col w-full max-w-[440px] mx-auto py-4">
+
+      <!-- Toast Notification Alert (Hidden by default) -->
+      <div id="toast-message" class="hidden mb-4 p-3.5 rounded-xl border flex items-center gap-3 text-sm transition-all duration-300">
+        <span id="toast-icon" class="material-symbols-outlined text-[20px] flex-shrink-0"></span>
+        <span id="toast-text" class="flex-1"></span>
+      </div>
+
+      <!-- Mode Switcher Tabs (Sign In vs Create Account) -->
+      <div class="bg-surface-container-high/60 p-1 rounded-2xl flex items-center mb-6">
+        <button id="tab-signin" type="button" class="flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-200 bg-white text-primary shadow-sm">
+          Sign In
+        </button>
+        <button id="tab-signup" type="button" class="flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-200 text-on-surface-variant hover:text-on-surface">
+          Create Account
+        </button>
+      </div>
+
+      <!-- Hero Intro Card -->
+      <div class="flex items-center gap-3.5 mb-6 bg-surface-card p-4 rounded-2xl border border-surface-container-high/70 shadow-sm">
+        <div id="hero-badge-icon" class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-[26px] symbol-filled">lock</span>
+        </div>
+        <div>
+          <h1 id="page-heading" class="text-xl font-bold text-on-surface tracking-tight">Welcome back</h1>
+          <p id="page-subheading" class="text-xs text-on-surface-variant mt-0.5">Enter your credentials to access your workspace.</p>
+        </div>
+      </div>
+
+      <!-- Social Authentication Buttons -->
+      <div class="flex flex-col gap-2.5 mb-6">
+        <button id="google-login-btn" class="w-full h-12 bg-surface-card hover:bg-surface-container active:scale-[0.99] border border-surface-container-high rounded-xl shadow-sm flex items-center justify-center gap-3 px-4 transition-all duration-150" type="button">
+          <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+          </svg>
+          <span id="google-btn-text" class="text-sm font-semibold text-on-surface">Continue with Google</span>
+        </button>
+      </div>
+
+      <!-- Divider -->
+      <div class="flex items-center gap-3 mb-6">
+        <div class="flex-1 h-px bg-surface-container-high"></div>
+        <span class="text-xs uppercase tracking-wider font-medium text-outline">or continue with email</span>
+        <div class="flex-1 h-px bg-surface-container-high"></div>
+      </div>
+
+      <!-- Main Form -->
+      <form id="auth-form" class="flex flex-col gap-4" novalidate>
+        <!-- Full Name Input (Visible in Sign-Up mode only) -->
+        <div id="name-field-group" class="hidden flex-col gap-1.5">
+          <label class="text-xs font-semibold text-on-surface" for="name">Full Name</label>
+          <div class="relative flex items-center bg-surface-card rounded-xl border border-surface-container-high transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+            <span class="material-symbols-outlined text-outline absolute left-3.5 text-[20px] pointer-events-none">badge</span>
+            <input autocomplete="name" class="w-full h-12 pl-11 pr-4 bg-transparent text-sm text-on-surface placeholder:text-outline-variant focus:outline-none" id="name" placeholder="e.g. Maya Lin" type="text"/>
+          </div>
+        </div>
+
+        <!-- Email Address Input -->
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-semibold text-on-surface" for="email">Work Email</label>
+            <span id="email-valid-indicator" class="hidden text-xs text-secondary font-medium items-center gap-1">
+              <span class="material-symbols-outlined text-[14px] symbol-filled">check_circle</span>
+              Valid format
+            </span>
+          </div>
+          <div class="relative flex items-center bg-surface-card rounded-xl border border-surface-container-high transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+            <span class="material-symbols-outlined text-outline absolute left-3.5 text-[20px] pointer-events-none">mail</span>
+            <input autocomplete="email" class="w-full h-12 pl-11 pr-10 bg-transparent text-sm text-on-surface placeholder:text-outline-variant focus:outline-none" id="email" placeholder="name@company.com" required type="email"/>
+            <span id="email-check-icon" class="hidden absolute right-3 text-secondary material-symbols-outlined text-[18px] font-bold">check</span>
+          </div>
+        </div>
+
+        <!-- Password Input Field -->
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-semibold text-on-surface" for="password">Password</label>
+            <div id="password-meta-row" class="text-xs">
+              <a id="forgot-password-link" href="#forgot" class="text-primary hover:underline font-medium">Forgot password?</a>
+              <span id="strength-label" class="hidden font-semibold text-outline text-xs">Too weak</span>
+            </div>
+          </div>
+          <div class="relative flex items-center bg-surface-card rounded-xl border border-surface-container-high transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+            <span class="material-symbols-outlined text-outline absolute left-3.5 text-[20px] pointer-events-none">lock</span>
+            <input autocomplete="current-password" class="w-full h-12 pl-11 pr-11 bg-transparent text-sm text-on-surface placeholder:text-outline-variant focus:outline-none" id="password" placeholder="Enter your password" required type="password"/>
+            <button aria-label="Toggle password visibility" class="absolute right-2.5 w-8 h-8 flex items-center justify-center text-outline hover:text-on-surface rounded-lg transition-colors active:bg-surface-container" id="toggle-password" type="button">
+              <span class="material-symbols-outlined text-[20px]" id="eye-icon">visibility</span>
+            </button>
+          </div>
+
+          <!-- Password Strength Section (Active in Sign-up mode) -->
+          <div id="strength-meter-section" class="hidden flex-col gap-2 mt-1">
+            <div aria-label="Password Strength Bar" class="flex items-center gap-1.5">
+              <div id="bar-1" class="h-1.5 flex-1 rounded-full bg-surface-container-high transition-all duration-300"></div>
+              <div id="bar-2" class="h-1.5 flex-1 rounded-full bg-surface-container-high transition-all duration-300"></div>
+              <div id="bar-3" class="h-1.5 flex-1 rounded-full bg-surface-container-high transition-all duration-300"></div>
+              <div id="bar-4" class="h-1.5 flex-1 rounded-full bg-surface-container-high transition-all duration-300"></div>
+            </div>
+
+            <!-- Dynamic Criteria Checklist -->
+            <div class="bg-surface-container p-3 rounded-xl flex flex-col gap-1.5 text-xs">
+              <div id="crit-length" class="flex items-center gap-2 text-on-surface-variant transition-colors">
+                <span class="w-4 h-4 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold">✕</span>
+                <span>At least 8 characters</span>
+              </div>
+              <div id="crit-number" class="flex items-center gap-2 text-on-surface-variant transition-colors">
+                <span class="w-4 h-4 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold">✕</span>
+                <span>Contains a number (0-9)</span>
+              </div>
+              <div id="crit-special" class="flex items-center gap-2 text-on-surface-variant transition-colors">
+                <span class="w-4 h-4 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold">✕</span>
+                <span>Special character (!@#$%^&*)</span>
+              </div>
+              <div id="crit-cases" class="flex items-center gap-2 text-on-surface-variant transition-colors">
+                <span class="w-4 h-4 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold">✕</span>
+                <span>Both uppercase and lowercase letters</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Terms & Privacy Agreement (Sign-Up mode only) -->
+        <div id="terms-container" class="hidden items-start gap-2.5 mt-1 select-none">
+          <label class="relative flex items-center justify-center w-5 h-5 mt-0.5 rounded-md border border-outline-variant bg-surface-card cursor-pointer">
+            <input class="sr-only" id="agree-terms" type="checkbox"/>
+            <span id="checkbox-icon" class="hidden material-symbols-outlined text-[16px] text-white font-bold">check</span>
+          </label>
+          <span class="text-xs text-on-surface-variant leading-snug">
+            I agree to the <a class="text-primary font-semibold underline underline-offset-2" href="#terms">Terms of Service</a> and <a class="text-primary font-semibold underline underline-offset-2" href="#privacy">Privacy Statement</a>.
+          </span>
+        </div>
+
+        <!-- Primary CTA Submit Button -->
+        <div class="pt-2">
+          <button id="submit-btn" class="w-full h-12 bg-primary hover:bg-primary-hover active:scale-[0.99] text-on-primary font-semibold text-sm rounded-xl shadow-md shadow-primary/25 transition-all duration-200 flex items-center justify-center gap-2" type="submit">
+            <span id="submit-btn-text">Sign In</span>
+            <span id="submit-btn-icon" class="material-symbols-outlined text-[18px]">arrow_forward</span>
+            <div id="submit-spinner" class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+          </button>
+        </div>
+      </form>
+
+      <!-- Toggle Mode Prompt Footer -->
+      <div class="mt-6 text-center">
+        <p class="text-xs text-on-surface-variant">
+          <span id="footer-text">Don't have an account?</span>
+          <button id="switch-mode-btn" type="button" class="text-primary hover:underline ml-1 font-semibold focus:outline-none">
+            Create an account
+          </button>
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // State management
+    let isSignUp = false;
+
+    // Elements
+    const tabSignIn = document.getElementById('tab-signin');
+    const tabSignUp = document.getElementById('tab-signup');
+    const headerTitle = document.getElementById('header-title');
+    const pageHeading = document.getElementById('page-heading');
+    const pageSubheading = document.getElementById('page-subheading');
+    const heroBadgeIcon = document.getElementById('hero-badge-icon');
+    const nameFieldGroup = document.getElementById('name-field-group');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const emailValidIndicator = document.getElementById('email-valid-indicator');
+    const emailCheckIcon = document.getElementById('email-check-icon');
+    const passwordInput = document.getElementById('password');
+    const togglePasswordBtn = document.getElementById('toggle-password');
+    const eyeIcon = document.getElementById('eye-icon');
+    const forgotPasswordLink = document.getElementById('forgot-password-link');
+    const strengthLabel = document.getElementById('strength-label');
+    const strengthMeterSection = document.getElementById('strength-meter-section');
+    const termsContainer = document.getElementById('terms-container');
+    const agreeTermsCheckbox = document.getElementById('agree-terms');
+    const checkboxIcon = document.getElementById('checkbox-icon');
+    const submitBtn = document.getElementById('submit-btn');
+    const submitBtnText = document.getElementById('submit-btn-text');
+    const submitBtnIcon = document.getElementById('submit-btn-icon');
+    const submitSpinner = document.getElementById('submit-spinner');
+    const footerText = document.getElementById('footer-text');
+    const switchModeBtn = document.getElementById('switch-mode-btn');
+    const authForm = document.getElementById('auth-form');
+    const toastMessage = document.getElementById('toast-message');
+    const toastIcon = document.getElementById('toast-icon');
+    const toastText = document.getElementById('toast-text');
+    const backBtn = document.getElementById('back-btn');
+
+    // Password criteria items
+    const critLength = document.getElementById('crit-length');
+    const critNumber = document.getElementById('crit-number');
+    const critSpecial = document.getElementById('crit-special');
+    const critCases = document.getElementById('crit-cases');
+    const bar1 = document.getElementById('bar-1');
+    const bar2 = document.getElementById('bar-2');
+    const bar3 = document.getElementById('bar-3');
+    const bar4 = document.getElementById('bar-4');
+
+    // Switch between Sign In and Sign Up modes
+    function setMode(signUp) {
+      isSignUp = signUp;
+      hideToast();
+
+      if (isSignUp) {
+        // Tab styling
+        tabSignUp.className = "flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-200 bg-white text-primary shadow-sm";
+        tabSignIn.className = "flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-200 text-on-surface-variant hover:text-on-surface";
+
+        // Headings
+        headerTitle.textContent = "Create Credentials";
+        pageHeading.textContent = "Create your account";
+        pageSubheading.textContent = "Start securing your workspace in seconds.";
+        heroBadgeIcon.innerHTML = `<span class="material-symbols-outlined text-[26px] symbol-filled">verified_user</span>`;
+
+        // Fields visibility
+        nameFieldGroup.classList.remove('hidden');
+        nameFieldGroup.classList.add('flex');
+        nameInput.setAttribute('required', 'true');
+        passwordInput.setAttribute('autocomplete', 'new-password');
+
+        forgotPasswordLink.classList.add('hidden');
+        strengthLabel.classList.remove('hidden');
+        strengthMeterSection.classList.remove('hidden');
+        strengthMeterSection.classList.add('flex');
+
+        termsContainer.classList.remove('hidden');
+        termsContainer.classList.add('flex');
+
+        submitBtnText.textContent = "Create Account";
+        footerText.textContent = "Already have an account?";
+        switchModeBtn.textContent = "Sign In";
+        checkPasswordStrength(passwordInput.value);
+      } else {
+        // Tab styling
+        tabSignIn.className = "flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-200 bg-white text-primary shadow-sm";
+        tabSignUp.className = "flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-200 text-on-surface-variant hover:text-on-surface";
+
+        // Headings
+        headerTitle.textContent = "Jarvis the Time Traveller";
+        pageHeading.textContent = "Welcome back";
+        pageSubheading.textContent = "Enter your credentials to access your workspace.";
+        heroBadgeIcon.innerHTML = `<span class="material-symbols-outlined text-[26px] symbol-filled">lock</span>`;
+
+        // Fields visibility
+        nameFieldGroup.classList.add('hidden');
+        nameFieldGroup.classList.remove('flex');
+        nameInput.removeAttribute('required');
+        passwordInput.setAttribute('autocomplete', 'current-password');
+
+        forgotPasswordLink.classList.remove('hidden');
+        strengthLabel.classList.add('hidden');
+        strengthMeterSection.classList.add('hidden');
+        strengthMeterSection.classList.remove('flex');
+
+        termsContainer.classList.add('hidden');
+        termsContainer.classList.remove('flex');
+
+        submitBtnText.textContent = "Sign In";
+        footerText.textContent = "Don't have an account?";
+        switchModeBtn.textContent = "Create an account";
+      }
+    }
+
+    // Toggle Password Visibility
+    if (togglePasswordBtn && passwordInput && eyeIcon) {
+      togglePasswordBtn.addEventListener('click', () => {
+        const isHidden = passwordInput.type === 'password';
+        passwordInput.type = isHidden ? 'text' : 'password';
+        eyeIcon.textContent = isHidden ? 'visibility_off' : 'visibility';
+      });
+    }
+
+    // Email validation
+    function validateEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    if (emailInput) {
+      emailInput.addEventListener('input', (e) => {
+        const val = e.target.value.trim();
+        if (validateEmail(val)) {
+          emailValidIndicator.classList.remove('hidden');
+          emailValidIndicator.classList.add('flex');
+          emailCheckIcon.classList.remove('hidden');
+        } else {
+          emailValidIndicator.classList.add('hidden');
+          emailValidIndicator.classList.remove('flex');
+          emailCheckIcon.classList.add('hidden');
+        }
+      });
+    }
+
+    // Password strength calculation
+    function checkPasswordStrength(pwd) {
+      if (!isSignUp) return;
+
+      const hasLength = pwd.length >= 8;
+      const hasNumber = /\d/.test(pwd);
+      const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+      const hasCases = /[a-z]/.test(pwd) && /[A-Z]/.test(pwd);
+
+      updateCriteriaItem(critLength, hasLength);
+      updateCriteriaItem(critNumber, hasNumber);
+      updateCriteriaItem(critSpecial, hasSpecial);
+      updateCriteriaItem(critCases, hasCases);
+
+      const score = [hasLength, hasNumber, hasSpecial, hasCases].filter(Boolean).length;
+      const bars = [bar1, bar2, bar3, bar4];
+
+      bars.forEach(b => {
+        b.className = 'h-1.5 flex-1 rounded-full bg-surface-container-high transition-all duration-300';
+      });
+
+      if (pwd.length === 0) {
+        strengthLabel.textContent = "Enter password";
+        strengthLabel.className = "text-xs font-semibold text-outline";
+        return;
+      }
+
+      if (score <= 1) {
+        strengthLabel.textContent = "Weak (1 of 4)";
+        strengthLabel.className = "text-xs font-semibold text-error";
+        bar1.classList.remove('bg-surface-container-high');
+        bar1.classList.add('bg-error');
+      } else if (score === 2) {
+        strengthLabel.textContent = "Fair (2 of 4)";
+        strengthLabel.className = "text-xs font-semibold text-amber-500";
+        bar1.classList.replace('bg-surface-container-high', 'bg-amber-500');
+        bar2.classList.replace('bg-surface-container-high', 'bg-amber-500');
+      } else if (score === 3) {
+        strengthLabel.textContent = "Good (3 of 4)";
+        strengthLabel.className = "text-xs font-semibold text-primary";
+        bar1.classList.replace('bg-surface-container-high', 'bg-primary');
+        bar2.classList.replace('bg-surface-container-high', 'bg-primary');
+        bar3.classList.replace('bg-surface-container-high', 'bg-primary');
+      } else {
+        strengthLabel.textContent = "Strong (4 of 4)";
+        strengthLabel.className = "text-xs font-semibold text-secondary";
+        bars.forEach(b => b.classList.replace('bg-surface-container-high', 'bg-secondary'));
+      }
+    }
+
+    function updateCriteriaItem(element, passed) {
+      if (!element) return;
+      const iconSpan = element.querySelector('span:first-child');
+      if (passed) {
+        element.classList.remove('text-on-surface-variant');
+        element.classList.add('text-secondary', 'font-medium');
+        iconSpan.className = 'w-4 h-4 rounded-full bg-secondary text-white flex items-center justify-center text-[10px] font-bold';
+        iconSpan.textContent = '✓';
+      } else {
+        element.classList.remove('text-secondary', 'font-medium');
+        element.classList.add('text-on-surface-variant');
+        iconSpan.className = 'w-4 h-4 rounded-full bg-surface-container-high text-outline flex items-center justify-center text-[10px] font-bold';
+        iconSpan.textContent = '✕';
+      }
+    }
+
+    if (passwordInput) {
+      passwordInput.addEventListener('input', (e) => checkPasswordStrength(e.target.value));
+    }
+
+    // Terms checkbox toggle
+    if (agreeTermsCheckbox) {
+      agreeTermsCheckbox.addEventListener('change', (e) => {
+        const box = e.target.parentElement;
+        if (e.target.checked) {
+          box.classList.add('bg-primary', 'border-primary');
+          checkboxIcon.classList.remove('hidden');
+        } else {
+          box.classList.remove('bg-primary', 'border-primary');
+          checkboxIcon.classList.add('hidden');
+        }
+      });
+    }
+
+    // Toast feedback helper
+    function showToast(type, text) {
+      toastMessage.className = type === 'success'
+        ? "mb-4 p-3.5 rounded-xl border bg-secondary-container/60 border-secondary/30 text-on-secondary-container flex items-center gap-3 text-sm transition-all duration-300"
+        : "mb-4 p-3.5 rounded-xl border bg-error-container/60 border-error/30 text-error flex items-center gap-3 text-sm transition-all duration-300";
+      toastIcon.textContent = type === 'success' ? 'check_circle' : 'error';
+      toastText.textContent = text;
+      toastMessage.classList.remove('hidden');
+    }
+
+    function hideToast() {
+      toastMessage.classList.add('hidden');
+    }
+
+    // Form submission
+    if (authForm) {
+      authForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        hideToast();
+
+        const email = emailInput.value.trim();
+        const pwd = passwordInput.value;
+
+        if (!validateEmail(email)) {
+          showToast('error', 'Please enter a valid email address.');
+          emailInput.focus();
+          return;
+        }
+
+        if (!pwd || pwd.length < 6) {
+          showToast('error', 'Password must be at least 6 characters.');
+          passwordInput.focus();
+          return;
+        }
+
+        if (isSignUp && !agreeTermsCheckbox.checked) {
+          showToast('error', 'Please agree to the Terms of Service to proceed.');
+          agreeTermsCheckbox.focus();
+          return;
+        }
+
+        // Simulate async authentication
+        submitBtn.disabled = true;
+        submitBtnIcon.classList.add('hidden');
+        submitSpinner.classList.remove('hidden');
+        submitBtnText.textContent = isSignUp ? "Creating Account..." : "Signing In...";
+
+        setTimeout(() => {
+          submitBtn.disabled = false;
+          submitSpinner.classList.add('hidden');
+          submitBtnIcon.classList.remove('hidden');
+          submitBtnText.textContent = isSignUp ? "Create Account" : "Sign In";
+
+          if (isSignUp) {
+            showToast('success', `Account created successfully for ${email}! Redirecting...`);
+          } else {
+            showToast('success', `Signed in successfully as ${email}! Redirecting...`);
+          }
+        }, 1000);
+      });
+    }
+
+    // Event listeners for mode switching
+    tabSignIn.addEventListener('click', () => setMode(false));
+    tabSignUp.addEventListener('click', () => setMode(true));
+    switchModeBtn.addEventListener('click', () => setMode(!isSignUp));
+
+    // Back button
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = '/';
+        }
+      });
+    }
+
+    // Google one-tap simulated click
+    document.getElementById('google-login-btn').addEventListener('click', () => {
+      showToast('success', 'Google authentication initiated.');
+    });
+
+    // Initialize mode
+    setMode(false);
+  </script>
+</body>
+</html>
