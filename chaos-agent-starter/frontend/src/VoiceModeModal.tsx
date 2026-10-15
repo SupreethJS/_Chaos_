@@ -19,6 +19,8 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
   const animFrameRef = useRef<number | null>(null);
   const recognitionRef = useRef<any>(null);
   const isComponentMounted = useRef<boolean>(true);
+  const isRecognizingRef = useRef<boolean>(false);
+  const isSpeakingRef = useRef<boolean>(false);
 
   // States
   const [isListening, setIsListening] = useState<boolean>(true);
@@ -34,35 +36,109 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
   const [autoSpeak, setAutoSpeak] = useState<boolean>(true);
   const [showSettingsToast, setShowSettingsToast] = useState<string | null>(null);
 
+  // Clean raw markdown syntax for voice display and speech synthesis
+  const cleanVoiceDisplayText = (text: string): { display: string; speech: string } => {
+    if (!text) return { display: '', speech: '' };
+    let clean = text
+      .replace(/^###\s+Research Synthesis:\s*.*$/gim, '')
+      .replace(/^#{1,6}\s+.*$/gim, '')
+      .replace(/\[\d+\]/g, '')
+      .replace(/^---\s*$/gim, '')
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/Sources & Verified Citations[\s\S]*$/i, '')
+      .replace(/\n{2,}/g, '\n\n')
+      .trim();
+
+    const sentences = clean.split(/(?<=[.?!])\s+/);
+    const speech = sentences.slice(0, 3).join(' ').slice(0, 320).trim();
+    return { display: clean || text, speech };
+  };
+
+  // Safe mic control helpers to prevent echo loop & InvalidStateError
+  const startListening = () => {
+    if (!recognitionRef.current || isRecognizingRef.current || isSpeakingRef.current) return;
+    try {
+      recognitionRef.current.start();
+      isRecognizingRef.current = true;
+    } catch {
+      // recognition might already be active
+    }
+  };
+
+  const pauseListening = () => {
+    if (!recognitionRef.current || !isRecognizingRef.current) return;
+    try {
+      recognitionRef.current.stop();
+      isRecognizingRef.current = false;
+    } catch {
+      // ignore
+    }
+  };
+
   // Stop TTS speech
   const stopSpeech = () => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
+      isSpeakingRef.current = false;
     }
   };
 
-  // Speak text using Web Speech API
+  // Speak text using Web Speech API with automatic mic feedback isolation
   const speakText = (text: string) => {
     if (!autoSpeak || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     try {
       stopSpeech();
-      const cleanText = text.replace(/[*#_`]/g, '').slice(0, 280);
-      const utterance = new SpeechSynthesisUtterance(cleanText);
+      // Temporarily mute microphone to avoid hearing own laptop speakers
+      pauseListening();
+      isSpeakingRef.current = true;
+      setVoiceStatus('JARVIS speaking...');
+
+      const { speech } = cleanVoiceDisplayText(text);
+      if (!speech) {
+        isSpeakingRef.current = false;
+        if (isListening) startListening();
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(speech);
       utterance.rate = 1.05;
       utterance.pitch = 1.0;
+
+      utterance.onend = () => {
+        isSpeakingRef.current = false;
+        // Wait 500ms for room echo / speaker decay before resuming mic
+        setTimeout(() => {
+          if (isComponentMounted.current && isListening) {
+            setVoiceStatus('Listening intently...');
+            startListening();
+          }
+        }, 500);
+      };
+
+      utterance.onerror = () => {
+        isSpeakingRef.current = false;
+        if (isComponentMounted.current && isListening) {
+          setVoiceStatus('Listening intently...');
+          startListening();
+        }
+      };
+
       window.speechSynthesis.speak(utterance);
     } catch {
-      // Speech synthesis not permitted or failed
+      isSpeakingRef.current = false;
     }
   };
 
   // Trigger query to JARVIS backend
   const handleQuery = async (queryText: string) => {
-    if (!queryText.trim()) return;
+    if (!queryText.trim() || isProcessing) return;
     setIsProcessing(true);
+    pauseListening();
     setVoiceStatus(`Processing: "${queryText.slice(0, 24)}..."`);
     setUserTranscript(queryText);
-    setTelemetryStream('Connecting to JARVIS temporal neural net... Synthesizing telemetry stream...');
+    setTelemetryStream('Connecting to JARVIS knowledge net... Synthesizing stream...');
 
     const start = performance.now();
     try {
@@ -77,10 +153,11 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
 
       if (res.ok) {
         const data = await res.json();
-        const answer = data.answer || 'Telemetry stream verified. Zero critical anomalies reported in active session.';
-        setTelemetryStream(answer);
-        setVoiceStatus('Telemetry stream updated');
-        speakText(answer);
+        const rawAnswer = data.answer || 'Knowledge stream verified. Systems normal.';
+        const { display } = cleanVoiceDisplayText(rawAnswer);
+        setTelemetryStream(display);
+        setVoiceStatus('JARVIS response ready');
+        speakText(rawAnswer);
       } else {
         throw new Error(`Status ${res.status}`);
       }
@@ -99,16 +176,20 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
         simulatedResponses[queryText] ||
         `Temporal analysis complete: Verified telemetry for "${queryText}". Systems operating within normal parameters.`;
 
-      setTelemetryStream(fallback);
+      const { display } = cleanVoiceDisplayText(fallback);
+      setTelemetryStream(display);
       setVoiceStatus('Telemetry stream updated');
       speakText(fallback);
     } finally {
       setIsProcessing(false);
-      setTimeout(() => {
-        if (isComponentMounted.current && isListening) {
-          setVoiceStatus('Listening intently...');
-        }
-      }, 2500);
+      if (!isSpeakingRef.current && isListening) {
+        setTimeout(() => {
+          if (isComponentMounted.current && isListening && !isSpeakingRef.current) {
+            setVoiceStatus('Listening intently...');
+            startListening();
+          }
+        }, 1000);
+      }
     }
   };
 
@@ -118,23 +199,15 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
       setIsListening(false);
       setVoiceStatus('Microphone paused');
       stopSpeech();
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch { /* ignore */ }
-      }
+      pauseListening();
     } else {
       setIsListening(true);
       setVoiceStatus('Listening intently...');
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.start();
-        } catch { /* ignore */ }
-      }
+      startListening();
     }
   };
 
-  // Web Speech API recognition initialization
+  // Web Speech API recognition initialization with error detection & feedback
   useEffect(() => {
     isComponentMounted.current = true;
     if (!isOpen) return;
@@ -150,13 +223,17 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
         recognition.lang = 'en-US';
 
         recognition.onstart = () => {
-          if (isComponentMounted.current) {
+          isRecognizingRef.current = true;
+          if (isComponentMounted.current && !isSpeakingRef.current) {
             setIsListening(true);
             setVoiceStatus('Listening intently...');
           }
         };
 
         recognition.onresult = (event: any) => {
+          // If JARVIS is currently speaking, reject echo feedback
+          if (isSpeakingRef.current) return;
+
           let currentSpeech = '';
           for (let i = event.resultIndex; i < event.results.length; ++i) {
             currentSpeech += event.results[i][0].transcript;
@@ -170,43 +247,60 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
           const lastResult = event.results[event.results.length - 1];
           if (lastResult.isFinal) {
             const finalQuery = lastResult[0].transcript.trim();
-            if (finalQuery.length > 3) {
+            if (finalQuery.length > 3 && !isProcessing) {
               handleQuery(finalQuery);
             }
           }
         };
 
-        recognition.onerror = () => {
-          // Gracefully fallback
+        recognition.onerror = (event: any) => {
+          isRecognizingRef.current = false;
+          console.warn('Speech recognition status:', event.error);
+          if (event.error === 'not-allowed') {
+            setVoiceStatus('Microphone permission blocked. Click URL lock icon to allow.');
+            setIsListening(false);
+          } else if (event.error === 'audio-capture') {
+            setVoiceStatus('No microphone detected. Please check audio input.');
+            setIsListening(false);
+          } else if (event.error === 'network') {
+            setVoiceStatus('Speech service reconnecting...');
+            setTimeout(() => {
+              if (isComponentMounted.current && isListening && !isSpeakingRef.current) {
+                startListening();
+              }
+            }, 1200);
+          } else if (event.error === 'no-speech') {
+            // Normal silence
+          } else {
+            setVoiceStatus(`Mic status: ${event.error}`);
+          }
         };
 
         recognition.onend = () => {
-          if (isComponentMounted.current && isListening) {
-            try {
-              recognition.start();
-            } catch { /* already running */ }
+          isRecognizingRef.current = false;
+          if (isComponentMounted.current && isListening && !isSpeakingRef.current && !isProcessing) {
+            setTimeout(() => {
+              if (isComponentMounted.current && isListening && !isSpeakingRef.current && !isProcessing) {
+                startListening();
+              }
+            }, 250);
           }
         };
 
         recognitionRef.current = recognition;
-        try {
-          recognition.start();
-        } catch {
-          // user interaction required or already running
-        }
-      } catch {
-        // speech recognition init failed
+        startListening();
+      } catch (err) {
+        console.error('Speech recognition init error:', err);
+        setVoiceStatus('Microphone initialization failed');
       }
+    } else {
+      setVoiceStatus('Speech recognition not supported in this browser');
     }
 
     return () => {
       isComponentMounted.current = false;
       stopSpeech();
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch { /* ignore */ }
-      }
+      pauseListening();
     };
   }, [isOpen]);
 

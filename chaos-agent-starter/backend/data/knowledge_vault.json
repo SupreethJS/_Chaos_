@@ -1,7 +1,301 @@
 {
   "version": "1.0",
-  "updatedAt": "2026-10-15T12:36:58.629Z",
+  "updatedAt": "2026-10-15T12:56:02.342Z",
   "entries": [
+    {
+      "id": "kb_1792068962341",
+      "query": "Research breakthrough advances in renewable energy (tandem solar, sodium-ion grid storage, floating offshore wind) and cite verified sources.",
+      "normalizedKey": "research breakthrough advances in renewable energy tandem solar sodiumion grid storage floating offshore wind and cite verified sources",
+      "topic": "Research breakthrough advances in renewable energy (tandem solar, sodium-ion grid storage, floating offshore wind) and cite verified sources",
+      "summary": "Detailed information retrieved for Research breakthrough advances in renewable energy (tandem solar, sodium-ion grid storage, floating offshore wind) and cite verified sources.",
+      "fullAnswer": "### Research Synthesis: Research breakthrough advances in renewable energy (tandem solar, sodium-ion grid storage, floating offshore wind) and cite verified sources\n\n#### 1. Definition & Core Overview\nDetailed information retrieved for Research breakthrough advances in renewable energy (tandem solar, sodium-ion grid storage, floating offshore wind) and cite verified sources. [1]\n\n---\n\n### Sources & Verified Citations\n- [1] **Lawrence Livermore National Laboratory FY2014 Laboratory Directed Research and Development Annual Report** (2015) – [https://doi.org/10.2172/1241966](https://doi.org/10.2172/1241966)\n- [2] **2021 LDRD Annual Report** (2022) – [https://doi.org/10.2172/1865858](https://doi.org/10.2172/1865858)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Lawrence Livermore National Laboratory FY2014 Laboratory Directed Research and Development Annual Report",
+          "url": "https://doi.org/10.2172/1241966",
+          "year": "2015",
+          "sourceName": "Peer-Reviewed Literature"
+        },
+        {
+          "id": 2,
+          "title": "2021 LDRD Annual Report",
+          "url": "https://doi.org/10.2172/1865858",
+          "year": "2022",
+          "sourceName": "Peer-Reviewed Literature"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T12:56:02.341Z",
+      "updatedAt": "2026-10-15T12:56:02.342Z",
+      "hitCount": 1
+    },
+    {
+      "id": "kb_1792068939336",
+      "query": "another person is working on something I can share that content across and it will all come here",
+      "normalizedKey": "another person is working on something i can share that content across and it will all come here",
+      "topic": "Wikipedia",
+      "summary": "Wikipedia is a free online encyclopedia written and maintained by a community of volunteer editors, known as Wikipedians, through open collaboration and the wiki software MediaWiki. Founded by Jimmy Wales and Larry Sanger in 2001, Wikipedia has been hosted since 2003 by the Wikimedia Foundation, an American nonprofit organization funded mainly by donations from readers. Wikipedia is the largest and most read reference work in history.",
+      "fullAnswer": "### Research Synthesis: Wikipedia\n\n#### 1. Definition & Core Overview\nWikipedia is a free online encyclopedia written and maintained by a community of volunteer editors, known as Wikipedians, through open collaboration and the wiki software MediaWiki. Founded by Jimmy Wales and Larry Sanger in 2001, Wikipedia has been hosted since 2003 by the Wikimedia Foundation, an American nonprofit organization funded mainly by donations from readers. Wikipedia is the largest and most read reference work in history. [1]\n\n#### 3. Key Concepts & Clinical / Practical Applications\n- **Melanie Griffith:** &quot;I am starting this recovery journal because I wanted to share with you my experiences. I am still a little shaky, but I feel it is important that I share [2]\n- **Instagram:** Instagram is an American photo and short-form video sharing social networking service owned by Meta Platforms. It allows users to upload media that can be edited [3]\n\n---\n\n### Sources & Verified Citations\n- [1] **Wikipedia (Comprehensive Overview)** (2026) – [https://en.wikipedia.org/wiki/Wikipedia](https://en.wikipedia.org/wiki/Wikipedia)\n- [2] **Melanie Griffith** (2026) – [https://en.wikipedia.org/wiki/Melanie%20Griffith](https://en.wikipedia.org/wiki/Melanie%20Griffith)\n- [3] **Instagram** (2026) – [https://en.wikipedia.org/wiki/Instagram](https://en.wikipedia.org/wiki/Instagram)\n- [4] **\"Does Being in Here Mean There Is Something Wrong With Me?\"** (1989) – [https://doi.org/10.1093/schbul/15.2.253](https://doi.org/10.1093/schbul/15.2.253)\n- [5] **Where I come from and how I got here** (2017) – [https://doi.org/10.26481/dis.20170922tsv](https://doi.org/10.26481/dis.20170922tsv)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Wikipedia (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Wikipedia",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "Melanie Griffith",
+          "url": "https://en.wikipedia.org/wiki/Melanie%20Griffith",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "Instagram",
+          "url": "https://en.wikipedia.org/wiki/Instagram",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 4,
+          "title": "\"Does Being in Here Mean There Is Something Wrong With Me?\"",
+          "url": "https://doi.org/10.1093/schbul/15.2.253",
+          "year": "1989",
+          "sourceName": "Schizophrenia Bulletin"
+        },
+        {
+          "id": 5,
+          "title": "Where I come from and how I got here",
+          "url": "https://doi.org/10.26481/dis.20170922tsv",
+          "year": "2017",
+          "sourceName": "Peer-Reviewed Literature"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T12:55:39.336Z",
+      "updatedAt": "2026-10-15T12:55:39.337Z",
+      "hitCount": 1
+    },
+    {
+      "id": "kb_1792068786335",
+      "query": "Research the latest advances in renewable energy and cite your sources.",
+      "normalizedKey": "research the latest advances in renewable energy and cite your sources",
+      "topic": "Energy development",
+      "summary": "Energy development is the field of activities focused on obtaining sources of energy from natural resources. These activities include the production of fossil fuel-derived, nuclear, and renewable sources of energy, and for the recovery and reuse of energy that would otherwise be wasted. Energy conservation and efficiency measures reduce the demand for energy development and can benefit society by improving environmental issues.",
+      "fullAnswer": "### Research Synthesis: Energy development\n\n#### 1. Definition & Core Overview\nEnergy development is the field of activities focused on obtaining sources of energy from natural resources. These activities include the production of fossil fuel-derived, nuclear, and renewable sources of energy, and for the recovery and reuse of energy that would otherwise be wasted. Energy conservation and efficiency measures reduce the demand for energy development and can benefit society by improving environmental issues. [1]\n\n#### 3. Key Concepts & Clinical / Practical Applications\n- **Open energy system models:** variable renewable energy sources: case study in Belgium&quot; (PDF). Proceedings of the 9th Conference on Sustainable Development of Energy, Water and Environment [2]\n- **Energy in Iran:** the Total Energy Supply (TES) in Iran was predominantly derived from natural gas (71.5%) and oil (26.5%), with nuclear power and renewable sources contributing [3]\n\n---\n\n### Sources & Verified Citations\n- [1] **Energy development (Comprehensive Overview)** (2026) – [https://en.wikipedia.org/wiki/Energy_development](https://en.wikipedia.org/wiki/Energy_development)\n- [2] **Open energy system models** (2026) – [https://en.wikipedia.org/wiki/Open%20energy%20system%20models](https://en.wikipedia.org/wiki/Open%20energy%20system%20models)\n- [3] **Energy in Iran** (2026) – [https://en.wikipedia.org/wiki/Energy%20in%20Iran](https://en.wikipedia.org/wiki/Energy%20in%20Iran)\n- [4] **Advances in Solar Energy towards Efficient and Sustainable Energy** (2021) – [https://doi.org/10.3390/su13116295](https://doi.org/10.3390/su13116295)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Energy development (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Energy_development",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "Open energy system models",
+          "url": "https://en.wikipedia.org/wiki/Open%20energy%20system%20models",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "Energy in Iran",
+          "url": "https://en.wikipedia.org/wiki/Energy%20in%20Iran",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 4,
+          "title": "Advances in Solar Energy towards Efficient and Sustainable Energy",
+          "url": "https://doi.org/10.3390/su13116295",
+          "year": "2021",
+          "sourceName": "Sustainability"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T12:53:06.335Z",
+      "updatedAt": "2026-10-15T12:53:06.337Z",
+      "hitCount": 1
+    },
+    {
+      "id": "kb_1792068640037",
+      "query": "we have a topper",
+      "normalizedKey": "we have a topper",
+      "topic": "Yes! We Have No Bananas",
+      "summary": "\"Yes! We Have No Bananas\" is an American novelty song by Frank Silver and Irving Cohn published March 23, 1923. It placed at No. 1 for five weeks after it was recorded by Billy Jones, Billy Murray, Arthur Hall, Snoopy's Classiks on Toys, Irving Kaufman, and others. It was recorded later by Benny Goodman and His Orchestra, Spike Jones & His City Slickers, Louis Prima, Kidsongs, and many more.",
+      "fullAnswer": "### Research Synthesis: Yes! We Have No Bananas\n\n#### 1. Definition & Core Overview\n\"Yes! We Have No Bananas\" is an American novelty song by Frank Silver and Irving Cohn published March 23, 1923. It placed at No. 1 for five weeks after it was recorded by Billy Jones, Billy Murray, Arthur Hall, Snoopy's Classiks on Toys, Irving Kaufman, and others. It was recorded later by Benny Goodman and His Orchestra, Spike Jones & His City Slickers, Louis Prima, Kidsongs, and many more. [1]\n\n#### 3. Key Concepts & Clinical / Practical Applications\n- **Post box topper:** these toppers in 2012 over the festive season, although this soon spread to other key times of the year such as Easter. More recently, we have noticed [2]\n- **Do We Have a Problem?:** &quot;Do We Have a Problem?&quot; debuted atop the Digital Songs chart with 48,000 digital downloads sold in its first week, marking Minaj&#039;s ninth chart topper and [3]\n\n---\n\n### Sources & Verified Citations\n- [1] **Yes! We Have No Bananas (Comprehensive Overview)** (2026) – [https://en.wikipedia.org/wiki/Yes!_We_Have_No_Bananas](https://en.wikipedia.org/wiki/Yes!_We_Have_No_Bananas)\n- [2] **Post box topper** (2026) – [https://en.wikipedia.org/wiki/Post%20box%20topper](https://en.wikipedia.org/wiki/Post%20box%20topper)\n- [3] **Do We Have a Problem?** (2026) – [https://en.wikipedia.org/wiki/Do%20We%20Have%20a%20Problem%3F](https://en.wikipedia.org/wiki/Do%20We%20Have%20a%20Problem%3F)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Yes! We Have No Bananas (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Yes!_We_Have_No_Bananas",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "Post box topper",
+          "url": "https://en.wikipedia.org/wiki/Post%20box%20topper",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "Do We Have a Problem?",
+          "url": "https://en.wikipedia.org/wiki/Do%20We%20Have%20a%20Problem%3F",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T12:50:40.037Z",
+      "updatedAt": "2026-10-15T12:50:40.038Z",
+      "hitCount": 1
+    },
+    {
+      "id": "kb_1792068629130",
+      "query": "patient",
+      "normalizedKey": "patient",
+      "topic": "Patient",
+      "summary": "A patient is any recipient of health care services that are performed by healthcare professionals. The patient is most often ill or injured and in need of treatment by a physician, nurse, optometrist, dentist, veterinarian, or other health care provider.",
+      "fullAnswer": "### Research Synthesis: Patient\n\n#### 1. Definition & Core Overview\nA patient is any recipient of health care services that are performed by healthcare professionals. The patient is most often ill or injured and in need of treatment by a physician, nurse, optometrist, dentist, veterinarian, or other health care provider. [1]\n\n#### 3. Key Concepts & Clinical / Practical Applications\n- **The Patient:** The Patient is an American psychological thriller limited series created and written by Joel Fields and Joe Weisberg, who also serve as showrunners and [2]\n- **Patient Zero (song):** &quot;Patient Zero&quot; is a song by the American singer-songwriter Taylor Swift from her reissued twelfth studio album, The Life of a Showgirl: The Encore (2026) [3]\n\n---\n\n### Sources & Verified Citations\n- [1] **Patient (Comprehensive Overview)** (2026) – [https://en.wikipedia.org/wiki/Patient](https://en.wikipedia.org/wiki/Patient)\n- [2] **The Patient** (2026) – [https://en.wikipedia.org/wiki/The%20Patient](https://en.wikipedia.org/wiki/The%20Patient)\n- [3] **Patient Zero (song)** (2026) – [https://en.wikipedia.org/wiki/Patient%20Zero%20(song)](https://en.wikipedia.org/wiki/Patient%20Zero%20(song))\n- [4] **Patients of the State** (2012) – [https://doi.org/10.1215/9780822395287](https://doi.org/10.1215/9780822395287)\n- [5] **Patient safety: what about the patient?** (2002) – [https://doi.org/10.1136/qhc.11.1.76](https://doi.org/10.1136/qhc.11.1.76)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Patient (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Patient",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "The Patient",
+          "url": "https://en.wikipedia.org/wiki/The%20Patient",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "Patient Zero (song)",
+          "url": "https://en.wikipedia.org/wiki/Patient%20Zero%20(song)",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 4,
+          "title": "Patients of the State",
+          "url": "https://doi.org/10.1215/9780822395287",
+          "year": "2012",
+          "sourceName": "Duke University Press eBooks"
+        },
+        {
+          "id": 5,
+          "title": "Patient safety: what about the patient?",
+          "url": "https://doi.org/10.1136/qhc.11.1.76",
+          "year": "2002",
+          "sourceName": "BMJ Quality & Safety"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T12:50:29.130Z",
+      "updatedAt": "2026-10-15T12:50:29.132Z",
+      "hitCount": 1
+    },
+    {
+      "id": "kb_1792068625822",
+      "query": "play me about Doraemon",
+      "normalizedKey": "doraemon",
+      "topic": "Doraemon",
+      "summary": "Doraemon  is a Japanese manga series written and illustrated by Fujiko F. Fujio. First serialized in 1969, the manga's selected chapters were collected in 45 tankōbon volumes published by Shogakukan from 1974 to 1996. The story revolves around an earless robotic cat named Doraemon, who travels back in time from the 22nd century to assist a boy named Nobita Nobi in his day-to-day life.",
+      "fullAnswer": "### Research Synthesis: Doraemon\n\n#### 1. Definition & Core Overview\nDoraemon  is a Japanese manga series written and illustrated by Fujiko F. Fujio. First serialized in 1969, the manga's selected chapters were collected in 45 tankōbon volumes published by Shogakukan from 1974 to 1996. The story revolves around an earless robotic cat named Doraemon, who travels back in time from the 22nd century to assist a boy named Nobita Nobi in his day-to-day life. [1]\n\n#### 3. Key Concepts & Clinical / Practical Applications\n- **Doraemon (character):** Doraemon (Japanese: ドラえもん) is the titular character of the manga and anime series Doraemon, created by Fujiko F. Fujio. Doraemon is a male robotic cat [2]\n- **Doraemon: New Nobita and the Castle of the Undersea Devil:** Doraemon the Movie: New Nobita and the Castle of the Undersea Devil (Japanese: 映画ドラえもん 新・のび太の海底鬼岩城, Hepburn: Eiga Doraemon Shin Nobita no Kaiteiki Ganjō) [3]\n\n---\n\n### Sources & Verified Citations\n- [1] **Doraemon (Comprehensive Overview)** (2026) – [https://en.wikipedia.org/wiki/Doraemon](https://en.wikipedia.org/wiki/Doraemon)\n- [2] **Doraemon (character)** (2026) – [https://en.wikipedia.org/wiki/Doraemon%20(character)](https://en.wikipedia.org/wiki/Doraemon%20(character))\n- [3] **Doraemon: New Nobita and the Castle of the Undersea Devil** (2026) – [https://en.wikipedia.org/wiki/Doraemon%3A%20New%20Nobita%20and%20the%20Castle%20of%20the%20Undersea%20Devil](https://en.wikipedia.org/wiki/Doraemon%3A%20New%20Nobita%20and%20the%20Castle%20of%20the%20Undersea%20Devil)\n- [4] **“Doraemon”** (2024) – [https://doi.org/10.1007/s40319-024-01496-y](https://doi.org/10.1007/s40319-024-01496-y)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Doraemon (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Doraemon",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "Doraemon (character)",
+          "url": "https://en.wikipedia.org/wiki/Doraemon%20(character)",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "Doraemon: New Nobita and the Castle of the Undersea Devil",
+          "url": "https://en.wikipedia.org/wiki/Doraemon%3A%20New%20Nobita%20and%20the%20Castle%20of%20the%20Undersea%20Devil",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 4,
+          "title": "“Doraemon”",
+          "url": "https://doi.org/10.1007/s40319-024-01496-y",
+          "year": "2024",
+          "sourceName": "GRURRR. Gewerblicher Rechtsschutz und Urheberrecht, Rechtsprechungs-Report/GRUR-DVD/GRUR-CD/IIC/Gewerblicher Rechtsschutz und Urheberrecht/Gewerblicher Rechtsschutz und Urheberrecht. Internationaler Teil"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T12:50:25.822Z",
+      "updatedAt": "2026-10-15T12:50:25.824Z",
+      "hitCount": 1
+    },
+    {
+      "id": "kb_1792068134025",
+      "query": "Export to SOC",
+      "normalizedKey": "export to soc",
+      "topic": "Curtiss SOC Seagull",
+      "summary": "The Curtiss SOC Seagull was an American single-engined scout observation seaplane, designed by Alexander Solla of the Curtiss-Wright Corporation for the United States Navy. The aircraft served on battleships and cruisers in a seaplane configuration, being launched by catapult and recovered from a sea landing. The wings folded back against the fuselage for storage aboard ship. When based ashore or on carriers the single float was replaced by fixed wheeled landing gear.",
+      "fullAnswer": "### Research Synthesis: Curtiss SOC Seagull\n\n#### 1. Definition & Core Overview\nThe Curtiss SOC Seagull was an American single-engined scout observation seaplane, designed by Alexander Solla of the Curtiss-Wright Corporation for the United States Navy. The aircraft served on battleships and cruisers in a seaplane configuration, being launched by catapult and recovered from a sea landing. The wings folded back against the fuselage for storage aboard ship. When based ashore or on carriers the single float was replaced by fixed wheeled landing gear. [1]\n\n#### 3. Key Concepts & Clinical / Practical Applications\n- **Geely EX5:** hand-drive simultaneously, indicating a greater focus on export markets. The vehicle was developed to compete with the BYD Yuan Plus/Atto 3, by closely approximating [2]\n- **SK1 (program):** parsed the structure of other Corel formats with the help of CDR Explorer. Export into CDR and CMX file formats was presented at the Libre Graphics Meeting [3]\n\n---\n\n### Sources & Verified Citations\n- [1] **Curtiss SOC Seagull (Comprehensive Overview)** (2026) – [https://en.wikipedia.org/wiki/Curtiss_SOC_Seagull](https://en.wikipedia.org/wiki/Curtiss_SOC_Seagull)\n- [2] **Geely EX5** (2026) – [https://en.wikipedia.org/wiki/Geely%20EX5](https://en.wikipedia.org/wiki/Geely%20EX5)\n- [3] **SK1 (program)** (2026) – [https://en.wikipedia.org/wiki/SK1%20(program)](https://en.wikipedia.org/wiki/SK1%20(program))\n- [4] **Impact of soil water erosion processes on catchment export of soil aggregates and associated SOC** (2017) – [https://doi.org/10.1016/j.geoderma.2017.01.021](https://doi.org/10.1016/j.geoderma.2017.01.021)\n- [5] **Study of the procedure for exporting cargo from Russia in SOC containers on ships sea lines** (2020) – [https://doi.org/10.18411/lj-07-2020-39](https://doi.org/10.18411/lj-07-2020-39)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Curtiss SOC Seagull (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Curtiss_SOC_Seagull",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "Geely EX5",
+          "url": "https://en.wikipedia.org/wiki/Geely%20EX5",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "SK1 (program)",
+          "url": "https://en.wikipedia.org/wiki/SK1%20(program)",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 4,
+          "title": "Impact of soil water erosion processes on catchment export of soil aggregates and associated SOC",
+          "url": "https://doi.org/10.1016/j.geoderma.2017.01.021",
+          "year": "2017",
+          "sourceName": "Geoderma"
+        },
+        {
+          "id": 5,
+          "title": "Study of the procedure for exporting cargo from Russia in SOC containers on ships sea lines",
+          "url": "https://doi.org/10.18411/lj-07-2020-39",
+          "year": "2020",
+          "sourceName": "Peer-Reviewed Literature"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T12:42:14.025Z",
+      "updatedAt": "2026-10-15T12:42:14.027Z",
+      "hitCount": 1
+    },
     {
       "id": "kb_1792067812827",
       "query": "what is quantum computing",
@@ -139,8 +433,8 @@
       ],
       "provider": "live-web-search",
       "createdAt": "2026-10-15T12:33:14.052Z",
-      "updatedAt": "2026-10-15T12:34:46.501Z",
-      "hitCount": 2
+      "updatedAt": "2026-10-15T12:41:28.360Z",
+      "hitCount": 3
     }
   ]
 }

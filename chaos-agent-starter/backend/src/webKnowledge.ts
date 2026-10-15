@@ -16,8 +16,8 @@ interface WebResearchResult {
 // Clean and extract the core concept from conversational prompts
 export function extractCoreQuery(raw: string): string {
   return raw
-    .replace(/^(can you\s+)?(please\s+)?(explain|tell me about|what is|what are|who is|who was|describe|how do|how does|why is|why are|give me an overview of|search for|research)\s+(about\s+)?/i, '')
-    .replace(/\s+(work|function|operate|mean)\??$/i, '')
+    .replace(/^(can you\s+|could you\s+|please\s+)*(tell\s+(me\s+)?(about\s+|all about\s+)?|explain\s+(to\s+me\s+|me\s+)?(about\s+|all about\s+)?|talk\s+about\s+|speak\s+about\s+|play\s+(me\s+)?(something\s+about\s+|about\s+)?|search\s+for\s+|search\s+|look\s+up\s+|find\s+(out\s+about\s+|info\s+on\s+|about\s+)?|what\s+(is|are|was|were|about)\s+|who\s+(is|was|were)\s+|give\s+me\s+(an\s+overview\s+of|details\s+about|info\s+on)?\s*|how\s+(does|do|can)\s+|why\s+(is|are|do|does)\s+)/i, '')
+    .replace(/\s+(work|function|operate|mean|do)\??$/i, '')
     .replace(/[?!.]+$/, '')
     .trim();
 }

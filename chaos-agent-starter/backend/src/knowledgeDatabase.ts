@@ -57,7 +57,8 @@ export function getAllKnowledge(): KnowledgeEntry[] {
 export function normalizeQueryKey(query: string): string {
   return query
     .toLowerCase()
-    .replace(/^(can you\s+)?(please\s+)?(explain|tell me about|what is|what are|who is|who was|describe|how do|how does|why is|why are|give me an overview of|search for|research)\s+(about\s+)?/i, '')
+    .replace(/^(can you\s+|could you\s+|please\s+)*(tell\s+(me\s+)?(about\s+|all about\s+)?|explain\s+(to\s+me\s+|me\s+)?(about\s+|all about\s+)?|talk\s+about\s+|speak\s+about\s+|play\s+(me\s+)?(something\s+about\s+|about\s+)?|search\s+for\s+|search\s+|look\s+up\s+|find\s+(out\s+about\s+|info\s+on\s+|about\s+)?|what\s+(is|are|was|were|about)\s+|who\s+(is|was|were)\s+|give\s+me\s+(an\s+overview\s+of|details\s+about|info\s+on)?\s*|how\s+(does|do|can)\s+|why\s+(is|are|do|does)\s+)/i, '')
+    .replace(/\s+(work|function|operate|mean|do)\??$/i, '')
     .replace(/[^\w\s]/gi, '')
     .trim();
 }
@@ -65,13 +66,19 @@ export function normalizeQueryKey(query: string): string {
 // Look up knowledge from the database
 export function findKnowledge(query: string): KnowledgeEntry | null {
   const norm = normalizeQueryKey(query);
-  if (!norm) return null;
+  if (!norm || norm.length < 3) return null;
 
   const entries = getAllKnowledge();
-  // Exact normalized match or strong substring match
-  const match = entries.find(
-    (e) => e.normalizedKey === norm || norm.includes(e.normalizedKey) || e.normalizedKey.includes(norm)
-  );
+  // Exact match first, or word-level inclusion if long enough
+  const match = entries.find((e) => {
+    if (e.normalizedKey === norm) return true;
+    if (e.normalizedKey.length >= 4 && norm.length >= 4) {
+      const eWords = e.normalizedKey.split(/\s+/);
+      const nWords = norm.split(/\s+/);
+      return eWords.every(w => nWords.includes(w)) || nWords.every(w => eWords.includes(w));
+    }
+    return false;
+  });
 
   if (match) {
     // Increment hit count
