@@ -533,14 +533,29 @@
         setTimeout(() => {
           submitBtn.disabled = false;
           submitSpinner.classList.add('hidden');
-          submitBtnIcon.classList.remove('hidden');
-          submitBtnText.textContent = isSignUp ? "Create Account" : "Sign In";
+          const derivedName = email.split('@')[0]
+            .split(/[._-]+/)
+            .filter(Boolean)
+            .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+            .join(' ') || 'Authorized User';
+
+          try {
+            localStorage.setItem('chaos-auth-status', 'authenticated');
+            localStorage.setItem('chaos-user-email', email);
+            localStorage.setItem('chaos-user-name', derivedName);
+          } catch (err) {
+            console.error('Storage error:', err);
+          }
 
           if (isSignUp) {
             showToast('success', `Account created successfully for ${email}! Redirecting...`);
           } else {
             showToast('success', `Signed in successfully as ${email}! Redirecting...`);
           }
+
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 800);
         }, 1000);
       });
     }
@@ -562,9 +577,22 @@
     }
 
     // Google one-tap simulated click
-    document.getElementById('google-login-btn').addEventListener('click', () => {
-      showToast('success', 'Google authentication initiated.');
-    });
+    const googleBtn = document.getElementById('google-login-btn');
+    if (googleBtn) {
+      googleBtn.addEventListener('click', () => {
+        showToast('success', 'Google authentication verified! Redirecting to workspace...');
+        try {
+          localStorage.setItem('chaos-auth-status', 'authenticated');
+          localStorage.setItem('chaos-user-email', 'alex.chen@workplace.google.com');
+          localStorage.setItem('chaos-user-name', 'Alex Chen');
+        } catch (err) {
+          console.error(err);
+        }
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 800);
+      });
+    }
 
     // Initialize mode
     setMode(false);

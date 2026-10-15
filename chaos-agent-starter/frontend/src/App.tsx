@@ -708,6 +708,9 @@ export default function App() {
   if (!isAuthenticated) {
     return (
       <LoginPage
+        onBack={() => {
+          setIsAuthenticated(true);
+        }}
         onSuccess={(user) => {
           setIsAuthenticated(true);
           localStorage.setItem('chaos-auth-status', 'authenticated');

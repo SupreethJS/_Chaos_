@@ -1,7 +1,154 @@
 {
   "version": "1.0",
-  "updatedAt": "2026-10-15T15:13:13.716Z",
+  "updatedAt": "2026-10-15T15:24:21.908Z",
   "entries": [
+    {
+      "id": "kb_1792077861904",
+      "query": "what is anime",
+      "normalizedKey": "anime",
+      "topic": "Anime",
+      "summary": "Anime  is animation originating from Japan. Outside Japan and in English, anime refers specifically to animation produced in Japan. However, anime, in Japan and in Japanese, describes all animated works, regardless of style or origin. Many works of animation with a similar style to Japanese animation are also produced outside Japan. Video games sometimes also feature themes and art styles that may be labelled as anime.",
+      "fullAnswer": "### Research Synthesis: Anime\n\n#### 1. Definition & Core Overview\nAnime  is animation originating from Japan. Outside Japan and in English, anime refers specifically to animation produced in Japan. However, anime, in Japan and in Japanese, describes all animated works, regardless of style or origin. Many works of animation with a similar style to Japanese animation are also produced outside Japan. Video games sometimes also feature themes and art styles that may be labelled as anime. [1]\n\n#### 3. Key Concepts & Clinical / Practical Applications\n- **2026 in anime:** Events in 2026 in anime. A list of anime films that will be released in theaters between January 1 and December 31, 2026. A list of anime television series [2]\n- **List of hentai anime:** This is a list of notable hentai anime. Hentai is anime and manga that contains pornographic content. List of hentai authors (groups, studios, productions [3]\n\n---\n\n### Sources & Verified Citations\n- [1] **Anime (Comprehensive Overview)** (2026) – [https://en.wikipedia.org/wiki/Anime](https://en.wikipedia.org/wiki/Anime)\n- [2] **2026 in anime** (2026) – [https://en.wikipedia.org/wiki/2026%20in%20anime](https://en.wikipedia.org/wiki/2026%20in%20anime)\n- [3] **List of hentai anime** (2026) – [https://en.wikipedia.org/wiki/List%20of%20hentai%20anime](https://en.wikipedia.org/wiki/List%20of%20hentai%20anime)\n- [4] **Anime** (2015) – [https://doi.org/10.5040/9781474269155](https://doi.org/10.5040/9781474269155)\n- [5] **The anime machine: a media theory of animation** (2010) – [https://doi.org/10.5860/choice.47-4242](https://doi.org/10.5860/choice.47-4242)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Anime (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Anime",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "2026 in anime",
+          "url": "https://en.wikipedia.org/wiki/2026%20in%20anime",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "List of hentai anime",
+          "url": "https://en.wikipedia.org/wiki/List%20of%20hentai%20anime",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 4,
+          "title": "Anime",
+          "url": "https://doi.org/10.5040/9781474269155",
+          "year": "2015",
+          "sourceName": "Bloomsbury Academic eBooks"
+        },
+        {
+          "id": 5,
+          "title": "The anime machine: a media theory of animation",
+          "url": "https://doi.org/10.5860/choice.47-4242",
+          "year": "2010",
+          "sourceName": "Choice Reviews Online"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T15:24:21.904Z",
+      "updatedAt": "2026-10-15T15:24:21.908Z",
+      "hitCount": 1
+    },
+    {
+      "id": "kb_1792077398600",
+      "query": "what is AI",
+      "normalizedKey": "ai",
+      "topic": "Artificial intelligence",
+      "summary": "Artificial intelligence (AI) is the capability of computational systems to perform tasks typically associated with human intelligence, such as learning, reasoning, problem-solving, perception, and decision-making. It is a field of research in engineering, mathematics, and computer science that develops and studies methods and software that enable machines to perceive their environment and use learning and intelligence to take actions that maximise their chances of achieving defined goals.",
+      "fullAnswer": "### Research Synthesis: Artificial intelligence\n\n#### 1. Definition & Core Overview\nArtificial intelligence (AI) is the capability of computational systems to perform tasks typically associated with human intelligence, such as learning, reasoning, problem-solving, perception, and decision-making. It is a field of research in engineering, mathematics, and computer science that develops and studies methods and software that enable machines to perceive their environment and use learning and intelligence to take actions that maximise their chances of achieving defined goals. [1]\n\n#### 3. Key Concepts & Clinical / Practical Applications\n- **Ai:** demonstrated by machines. Ai, ai, a.i, A.I or AI may also refer to: Ai (chimpanzee), an individual experimental subject in Japan Ai (sloth) or the pale-throated [2]\n- **.ai:** within off.ai, com.ai, net.ai, and org.ai are available worldwide without restriction. From 15 September 2009, second level registrations within .ai are available [3]\n\n---\n\n### Sources & Verified Citations\n- [1] **Artificial intelligence (Comprehensive Overview)** (2026) – [https://en.wikipedia.org/wiki/Artificial_intelligence](https://en.wikipedia.org/wiki/Artificial_intelligence)\n- [2] **Ai** (2026) – [https://en.wikipedia.org/wiki/Ai](https://en.wikipedia.org/wiki/Ai)\n- [3] **.ai** (2026) – [https://en.wikipedia.org/wiki/.ai](https://en.wikipedia.org/wiki/.ai)\n- [4] **Sustainable AI: AI for sustainability and the sustainability of AI** (2021) – [https://doi.org/10.1007/s43681-021-00043-6](https://doi.org/10.1007/s43681-021-00043-6)\n- [5] **Generative AI** (2023) – [https://doi.org/10.1007/s12599-023-00834-7](https://doi.org/10.1007/s12599-023-00834-7)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Artificial intelligence (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "Ai",
+          "url": "https://en.wikipedia.org/wiki/Ai",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": ".ai",
+          "url": "https://en.wikipedia.org/wiki/.ai",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 4,
+          "title": "Sustainable AI: AI for sustainability and the sustainability of AI",
+          "url": "https://doi.org/10.1007/s43681-021-00043-6",
+          "year": "2021",
+          "sourceName": "AI and Ethics"
+        },
+        {
+          "id": 5,
+          "title": "Generative AI",
+          "url": "https://doi.org/10.1007/s12599-023-00834-7",
+          "year": "2023",
+          "sourceName": "Business & Information Systems Engineering"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T15:16:38.600Z",
+      "updatedAt": "2026-10-15T15:16:38.602Z",
+      "hitCount": 1
+    },
+    {
+      "id": "kb_1792077371733",
+      "query": "computer",
+      "normalizedKey": "computer",
+      "topic": "Computer",
+      "summary": "A computer is a machine that can be programmed to automatically carry out sequences of arithmetic or logical operations (computation). Modern digital electronic computers can perform generic sets of operations known as programs, which enable computers to perform a wide range of tasks. The term computer system may refer to a nominally complete computer that includes the hardware, operating system, software, and peripheral equipment needed and used for full operation, or to a group of computers that are linked and function together, such as a computer network or computer cluster.",
+      "fullAnswer": "### Research Synthesis: Computer\n\n#### 1. Definition & Core Overview\nA computer is a machine that can be programmed to automatically carry out sequences of arithmetic or logical operations (computation). Modern digital electronic computers can perform generic sets of operations known as programs, which enable computers to perform a wide range of tasks. The term computer system may refer to a nominally complete computer that includes the hardware, operating system, software, and peripheral equipment needed and used for full operation, or to a group of computers that are linked and function together, such as a computer network or computer cluster. [1]\n\n#### 3. Key Concepts & Clinical / Practical Applications\n- **Computer science:** Fundamental areas of computer science Computer science is the study of computation, information, and automation, together with their associated phenomena [2]\n- **Computer network:** In computer science, computer engineering, and telecommunications, a network is a group of communicating computers and peripherals called hosts, which [3]\n\n---\n\n### Sources & Verified Citations\n- [1] **Computer (Comprehensive Overview)** (2026) – [https://en.wikipedia.org/wiki/Computer](https://en.wikipedia.org/wiki/Computer)\n- [2] **Computer science** (2026) – [https://en.wikipedia.org/wiki/Computer%20science](https://en.wikipedia.org/wiki/Computer%20science)\n- [3] **Computer network** (2026) – [https://en.wikipedia.org/wiki/Computer%20network](https://en.wikipedia.org/wiki/Computer%20network)\n- [4] **Gender and Computers** (2003) – [https://doi.org/10.4324/9781410608932](https://doi.org/10.4324/9781410608932)\n- [5] **The Trouble with Computers** (1996) – [https://doi.org/10.7551/mitpress/6918.001.0001](https://doi.org/10.7551/mitpress/6918.001.0001)\n",
+      "sources": [
+        {
+          "id": 1,
+          "title": "Computer (Comprehensive Overview)",
+          "url": "https://en.wikipedia.org/wiki/Computer",
+          "year": "2026",
+          "sourceName": "Wikipedia Academic Corpus"
+        },
+        {
+          "id": 2,
+          "title": "Computer science",
+          "url": "https://en.wikipedia.org/wiki/Computer%20science",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 3,
+          "title": "Computer network",
+          "url": "https://en.wikipedia.org/wiki/Computer%20network",
+          "year": "2026",
+          "sourceName": "Encyclopedic Knowledge Base"
+        },
+        {
+          "id": 4,
+          "title": "Gender and Computers",
+          "url": "https://doi.org/10.4324/9781410608932",
+          "year": "2003",
+          "sourceName": "Psychology Press eBooks"
+        },
+        {
+          "id": 5,
+          "title": "The Trouble with Computers",
+          "url": "https://doi.org/10.7551/mitpress/6918.001.0001",
+          "year": "1996",
+          "sourceName": "The MIT Press eBooks"
+        }
+      ],
+      "provider": "live-web-search",
+      "createdAt": "2026-10-15T15:16:11.733Z",
+      "updatedAt": "2026-10-15T15:16:11.735Z",
+      "hitCount": 1
+    },
     {
       "id": "kb_1792070685422",
       "query": "tomorrow holiday",
@@ -370,8 +517,8 @@
       ],
       "provider": "live-web-search",
       "createdAt": "2026-10-15T12:36:52.827Z",
-      "updatedAt": "2026-10-15T12:36:58.629Z",
-      "hitCount": 2
+      "updatedAt": "2026-10-15T15:15:20.468Z",
+      "hitCount": 3
     },
     {
       "id": "kb_1792067618392",
