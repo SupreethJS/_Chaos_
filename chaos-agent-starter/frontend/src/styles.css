@@ -2725,6 +2725,42 @@ button, input, textarea, select {
   min-width: 140px;
 }
 
+.host-selector-tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-surface-elevated);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.host-tab-btn {
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.host-tab-btn.active {
+  background: var(--bg-surface);
+  color: var(--primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.host-tab-btn:hover:not(.active) {
+  color: var(--text-main);
+}
+
 .capability-table {
   display: flex;
   flex-direction: column;

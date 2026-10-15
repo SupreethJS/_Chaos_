@@ -32,6 +32,24 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+app.get('/api/network-info', (_req, res) => {
+  const interfaces = os.networkInterfaces();
+  const addresses: string[] = [];
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name] || []) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        addresses.push(iface.address);
+      }
+    }
+  }
+  res.json({
+    localIp: addresses[0] || 'localhost',
+    allIps: addresses,
+    frontendPort: 5173,
+    backendPort: port
+  });
+});
+
 const chatSchema = z.object({
   message: z.string().trim().min(1).max(12000),
   history: z.array(z.object({

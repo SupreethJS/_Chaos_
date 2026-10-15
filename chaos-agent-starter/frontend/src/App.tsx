@@ -127,14 +127,47 @@ export default function App() {
   // Module 7: My Documents Library
   const [savedDocs, setSavedDocs] = useState<GeneratedDoc[]>([]);
 
-  // Authentication State (integrated with login page)
+  // Authentication State (integrated with login page and mobile handover)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('handover') === 'true') {
+        try {
+          localStorage.setItem('chaos-auth-status', 'authenticated');
+          if (params.get('user')) {
+            localStorage.setItem('chaos-user-name', params.get('user')!);
+          }
+          if (params.get('email')) {
+            localStorage.setItem('chaos-user-email', params.get('email')!);
+          }
+        } catch {
+          // ignore
+        }
+        return true;
+      }
+    }
     return localStorage.getItem('chaos-auth-status') === 'authenticated';
   });
 
   // Module 6: User Profile & Preferences
-  const [userName, setUserName] = useState(() => localStorage.getItem('chaos-user-name') || 'Maya Lin');
-  const [userEmail, setUserEmail] = useState(() => localStorage.getItem('chaos-user-email') || 'maya.lin@acme-cloud.io');
+  const [userName, setUserName] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('handover') === 'true' && params.get('user')) {
+        return params.get('user')!;
+      }
+    }
+    return localStorage.getItem('chaos-user-name') || 'Maya Lin';
+  });
+  const [userEmail, setUserEmail] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('handover') === 'true' && params.get('email')) {
+        return params.get('email')!;
+      }
+    }
+    return localStorage.getItem('chaos-user-email') || 'maya.lin@acme-cloud.io';
+  });
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(false);
   const [passwordNotice, setPasswordNotice] = useState<string | null>(null);
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import QRCode from 'qrcode';
 import {
   Smartphone,
   Laptop,
@@ -43,6 +44,14 @@ export const CrossDeviceHandover: React.FC<CrossDeviceHandoverProps> = ({
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [desktopShortcutPath, setDesktopShortcutPath] = useState<string>('');
   const [installSuccessMessage, setInstallSuccessMessage] = useState<string>('');
+
+  // Scannable QR Code & Network States
+  const [lanIp, setLanIp] = useState<string>('');
+  const [hostMode, setHostMode] = useState<'lan' | 'local' | 'custom'>('lan');
+  const [customHost, setCustomHost] = useState<string>('');
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
+  const [qrGenerating, setQrGenerating] = useState(false);
+  const [qrDownloaded, setQrDownloaded] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -134,7 +143,63 @@ export const CrossDeviceHandover: React.FC<CrossDeviceHandoverProps> = ({
     setShowInstallModal(true);
   };
 
-  const syncUrl = typeof window !== 'undefined' ? `${window.location.origin}/?handover=true&user=${encodeURIComponent(userName)}` : 'http://localhost:5173/';
+  // Auto-detect Local Network IP for Phone Wi-Fi Scanning
+  useEffect(() => {
+    let isMounted = true;
+    fetch(`${backendUrl}/api/network-info`)
+      .then(res => res.json())
+      .then(data => {
+        if (isMounted && data.localIp && data.localIp !== 'localhost') {
+          setLanIp(data.localIp);
+          setHostMode('lan');
+        } else if (isMounted) {
+          setHostMode('local');
+        }
+      })
+      .catch(() => {
+        if (isMounted) setHostMode('local');
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [backendUrl]);
+
+  // Compute Active Handover Link
+  const computedOrigin = (() => {
+    if (typeof window === 'undefined') return 'http://localhost:5173';
+    if (hostMode === 'lan' && lanIp) {
+      return `http://${lanIp}:5173`;
+    }
+    if (hostMode === 'custom' && customHost.trim()) {
+      const trimmed = customHost.trim();
+      return trimmed.startsWith('http://') || trimmed.startsWith('https://') ? trimmed : `http://${trimmed}`;
+    }
+    return window.location.origin;
+  })();
+
+  const syncUrl = `${computedOrigin}/?handover=true&user=${encodeURIComponent(userName)}`;
+
+  // Generate Real ISO/IEC 18004 Standard Scannable QR Code
+  useEffect(() => {
+    setQrGenerating(true);
+    QRCode.toDataURL(syncUrl, {
+      errorCorrectionLevel: 'M',
+      margin: 2,
+      width: 256,
+      color: {
+        dark: '#1e1b4b',
+        light: '#ffffff',
+      },
+    })
+      .then(url => {
+        setQrCodeDataUrl(url);
+        setQrGenerating(false);
+      })
+      .catch(err => {
+        console.error('QR code generation error:', err);
+        setQrGenerating(false);
+      });
+  }, [syncUrl]);
 
   const copySyncLink = () => {
     if (navigator.clipboard) {
@@ -142,6 +207,18 @@ export const CrossDeviceHandover: React.FC<CrossDeviceHandoverProps> = ({
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
     }
+  };
+
+  const downloadQrCode = () => {
+    if (!qrCodeDataUrl) return;
+    const a = document.createElement('a');
+    a.href = qrCodeDataUrl;
+    a.download = `jarvis-qr-handover-${userName.replace(/\s+/g, '-').toLowerCase()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setQrDownloaded(true);
+    setTimeout(() => setQrDownloaded(false), 2000);
   };
 
   // Determine current detected device
@@ -210,96 +287,151 @@ export const CrossDeviceHandover: React.FC<CrossDeviceHandoverProps> = ({
               <QrCode size={18} color="var(--primary)" />
               <h3 style={{ margin: 0, fontSize: 16 }}>Instant Mobile Handover & Sync</h3>
             </div>
-            <span className="live-status-pill">
-              <span className="dot-pulse" style={{ background: '#10b981', width: 6, height: 6 }} />
-              Live Sync
+            <span className="live-status-pill verified">
+              <ShieldCheck size={13} color="#10b981" />
+              ISO/IEC 18004 Verified
             </span>
           </div>
 
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '8px 0 16px' }}>
-            Scan this code with your mobile camera or tablet to transfer this exact session and continue multi-step tasks seamlessly.
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '8px 0 12px' }}>
+            Scan with your mobile camera or any QR scanner to instantly transfer this exact session and continue multi-step tasks seamlessly.
           </p>
 
-          {/* SVG QR Code */}
-          <div className="qr-code-wrapper">
-            <div className="qr-svg-frame">
-              <svg viewBox="0 0 160 160" width="160" height="160" className="qr-svg">
-                {/* Clean geometric QR matrix */}
-                <rect width="160" height="160" fill="#ffffff" rx="12" />
-                {/* Position detection patterns */}
-                <rect x="12" y="12" width="40" height="40" fill="#1e1b4b" rx="4" />
-                <rect x="18" y="18" width="28" height="28" fill="#ffffff" rx="2" />
-                <rect x="24" y="24" width="16" height="16" fill="#4f46e5" rx="2" />
+          {/* Network Target Selector */}
+          <div className="host-selector-tabs">
+            {lanIp && (
+              <button
+                type="button"
+                className={`host-tab-btn ${hostMode === 'lan' ? 'active' : ''}`}
+                onClick={() => setHostMode('lan')}
+                title="Use computer's Wi-Fi network IP so mobile devices on the same network can open it"
+              >
+                <Wifi size={13} />
+                <span>Wi-Fi Network ({lanIp}:5173)</span>
+              </button>
+            )}
+            <button
+              type="button"
+              className={`host-tab-btn ${hostMode === 'local' ? 'active' : ''}`}
+              onClick={() => setHostMode('local')}
+              title="Use localhost origin"
+            >
+              <Laptop size={13} />
+              <span>Localhost ({typeof window !== 'undefined' ? window.location.host : 'localhost:5173'})</span>
+            </button>
+            <button
+              type="button"
+              className={`host-tab-btn ${hostMode === 'custom' ? 'active' : ''}`}
+              onClick={() => setHostMode('custom')}
+              title="Enter custom tunnel or domain"
+            >
+              <Share2 size={13} />
+              <span>Custom URL</span>
+            </button>
+          </div>
 
-                <rect x="108" y="12" width="40" height="40" fill="#1e1b4b" rx="4" />
-                <rect x="114" y="18" width="28" height="28" fill="#ffffff" rx="2" />
-                <rect x="120" y="24" width="16" height="16" fill="#4f46e5" rx="2" />
-
-                <rect x="12" y="108" width="40" height="40" fill="#1e1b4b" rx="4" />
-                <rect x="18" y="114" width="28" height="28" fill="#ffffff" rx="2" />
-                <rect x="24" y="120" width="16" height="16" fill="#4f46e5" rx="2" />
-
-                {/* Data blocks */}
-                <rect x="60" y="16" width="8" height="8" fill="#1e1b4b" />
-                <rect x="76" y="16" width="8" height="8" fill="#1e1b4b" />
-                <rect x="68" y="28" width="8" height="8" fill="#4f46e5" />
-                <rect x="88" y="28" width="8" height="8" fill="#1e1b4b" />
-                <rect x="60" y="44" width="8" height="8" fill="#1e1b4b" />
-                <rect x="76" y="44" width="8" height="8" fill="#4f46e5" />
-
-                <rect x="16" y="64" width="8" height="8" fill="#1e1b4b" />
-                <rect x="32" y="64" width="8" height="8" fill="#4f46e5" />
-                <rect x="48" y="64" width="8" height="8" fill="#1e1b4b" />
-                <rect x="64" y="64" width="8" height="8" fill="#1e1b4b" />
-                <rect x="80" y="64" width="8" height="8" fill="#4f46e5" />
-                <rect x="96" y="64" width="8" height="8" fill="#1e1b4b" />
-                <rect x="112" y="64" width="8" height="8" fill="#1e1b4b" />
-                <rect x="128" y="64" width="8" height="8" fill="#4f46e5" />
-
-                <rect x="28" y="78" width="8" height="8" fill="#4f46e5" />
-                <rect x="44" y="78" width="8" height="8" fill="#1e1b4b" />
-                <rect x="76" y="78" width="8" height="8" fill="#1e1b4b" />
-                <rect x="108" y="78" width="8" height="8" fill="#4f46e5" />
-                <rect x="124" y="78" width="8" height="8" fill="#1e1b4b" />
-
-                <rect x="60" y="96" width="8" height="8" fill="#1e1b4b" />
-                <rect x="76" y="96" width="8" height="8" fill="#4f46e5" />
-                <rect x="92" y="96" width="8" height="8" fill="#1e1b4b" />
-                <rect x="108" y="96" width="8" height="8" fill="#1e1b4b" />
-
-                <rect x="68" y="112" width="8" height="8" fill="#4f46e5" />
-                <rect x="84" y="112" width="8" height="8" fill="#1e1b4b" />
-                <rect x="100" y="112" width="8" height="8" fill="#4f46e5" />
-                <rect x="116" y="112" width="8" height="8" fill="#1e1b4b" />
-                <rect x="132" y="112" width="8" height="8" fill="#4f46e5" />
-
-                <rect x="60" y="128" width="8" height="8" fill="#1e1b4b" />
-                <rect x="76" y="128" width="8" height="8" fill="#1e1b4b" />
-                <rect x="92" y="128" width="8" height="8" fill="#4f46e5" />
-                <rect x="124" y="128" width="8" height="8" fill="#1e1b4b" />
-
-                {/* Center J Logo Badge */}
-                <circle cx="80" cy="80" r="16" fill="#12102b" />
-                <circle cx="80" cy="80" r="14" fill="#3525cd" />
-                <text x="80" y="85" textAnchor="middle" fill="#ffffff" fontSize="13" fontWeight="bold" fontFamily="sans-serif">J</text>
-              </svg>
+          {hostMode === 'custom' && (
+            <div style={{ marginBottom: 12 }}>
+              <input
+                type="text"
+                placeholder="e.g. https://jarvis.ngrok-free.app or http://192.168.1.50:5173"
+                value={customHost}
+                onChange={e => setCustomHost(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-surface)',
+                  color: 'var(--text-main)',
+                  fontSize: 12,
+                  boxSizing: 'border-box'
+                }}
+              />
             </div>
+          )}
+
+          {/* Actual Functional QR Code */}
+          <div className="qr-code-wrapper">
+            <div className="qr-svg-frame" style={{ width: 160, height: 160, position: 'relative' }}>
+              {qrCodeDataUrl ? (
+                <img
+                  src={qrCodeDataUrl}
+                  alt={`Handover QR Code for ${userName}`}
+                  id="handover-qr-img"
+                  style={{
+                    width: 160,
+                    height: 160,
+                    display: 'block',
+                    borderRadius: 8,
+                    imageRendering: 'pixelated'
+                  }}
+                />
+              ) : (
+                <div style={{ width: 160, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'var(--text-muted)' }}>
+                  {qrGenerating ? 'Generating QR...' : 'Loading QR...'}
+                </div>
+              )}
+            </div>
+
             <div className="qr-info-right">
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-main)' }}>
-                Session Handover Link
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-main)' }}>
+                  Scannable Session Handover Link
+                </span>
+                <span style={{ fontSize: 10, background: '#ecfdf5', color: '#065f46', padding: '2px 6px', borderRadius: 9999, fontWeight: 700 }}>
+                  ACTIVE
+                </span>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', wordBreak: 'break-all', marginTop: 4 }}>
+
+              <div style={{
+                fontSize: 11,
+                color: 'var(--text-muted)',
+                wordBreak: 'break-all',
+                marginTop: 6,
+                padding: '6px 8px',
+                borderRadius: 6,
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                fontFamily: 'monospace'
+              }}>
                 {syncUrl}
               </div>
-              <button
-                id="copy-sync-link-btn"
-                className="btn-secondary"
-                onClick={copySyncLink}
-                style={{ marginTop: 10, padding: '6px 12px', fontSize: 12 }}
-              >
-                {copiedLink ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
-                <span>{copiedLink ? 'Link Copied!' : 'Copy Mobile Link'}</span>
-              </button>
+
+              <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                <button
+                  id="copy-sync-link-btn"
+                  className="btn-secondary"
+                  onClick={copySyncLink}
+                  style={{ padding: '6px 12px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  {copiedLink ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+                  <span>{copiedLink ? 'Link Copied!' : 'Copy Mobile Link'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  id="download-qr-btn"
+                  className="btn-secondary"
+                  onClick={downloadQrCode}
+                  title="Download scannable QR Code as PNG"
+                  style={{ padding: '6px 12px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  {qrDownloaded ? <Check size={14} color="#10b981" /> : <Download size={14} />}
+                  <span>{qrDownloaded ? 'Downloaded!' : 'Download QR'}</span>
+                </button>
+
+                <a
+                  href={syncUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary"
+                  style={{ padding: '6px 12px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}
+                >
+                  <ExternalLink size={14} />
+                  <span>Test Link</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>
