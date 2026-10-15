@@ -136,7 +136,7 @@ export const CrossDeviceHandover: React.FC<CrossDeviceHandoverProps> = ({
     // 1. Immediately trigger browser download of .bat desktop launcher
     triggerBrowserShortcutDownload();
 
-    let createdPath = 'C:\\Users\\Admin\\Desktop\\JARVIS — The Time Traveller.lnk';
+    let createdPath = 'C:\\Users\\Admin\\Desktop\\JARVIS - The Time Traveller.lnk';
 
     // 2. Call backend to place shortcut directly on the user's laptop Desktop
     try {

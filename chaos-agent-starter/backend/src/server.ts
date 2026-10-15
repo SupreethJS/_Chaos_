@@ -372,15 +372,28 @@ app.post('/api/install-desktop-shortcut', (_req, res) => {
 
     fs.writeFileSync(batFilePath, batContent, 'utf-8');
 
-    // 2. Create Internet Shortcut URL
-    const urlFilePath = path.join(desktopDir, 'JARVIS — The Time Traveller.url');
-    const urlContent = `[InternetShortcut]\r\nURL=${appUrl}\r\nIconIndex=0\r\nIconFile=C:\\Windows\\System32\\shell32.dll\r\n[{000214A0-0000-0000-C000-000000000046}]\r\nProp3=19,11\r\n`;
+    // Ensure jarvis.ico exists
+    const icoPath = path.join(projectRoot, 'chaos-agent-starter', 'frontend', 'public', 'jarvis.ico');
+    if (!fs.existsSync(icoPath)) {
+      try {
+        const makeScript = path.join(projectRoot, 'chaos-agent-starter', 'backend', 'src', 'makeIcon.ps1');
+        if (fs.existsSync(makeScript)) {
+          execSync(`powershell -ExecutionPolicy Bypass -File "${makeScript}"`, { stdio: 'ignore' });
+        }
+      } catch (err) {
+        console.warn('Could not auto-generate jarvis.ico:', err);
+      }
+    }
+
+    // 2. Create Internet Shortcut URL with JARVIS icon
+    const urlFilePath = path.join(desktopDir, 'JARVIS - The Time Traveller.url');
+    const urlContent = `[InternetShortcut]\r\nURL=${appUrl}\r\nIconIndex=0\r\nIconFile=${icoPath}\r\n[{000214A0-0000-0000-C000-000000000046}]\r\nProp3=19,11\r\n`;
     fs.writeFileSync(urlFilePath, urlContent, 'utf-8');
 
-    // 3. Create Windows .lnk Shortcut with icon via PowerShell
-    const lnkFilePath = path.join(desktopDir, 'JARVIS — The Time Traveller.lnk');
+    // 3. Create Windows .lnk Shortcut with JARVIS logo icon via PowerShell
+    const lnkFilePath = path.join(desktopDir, 'JARVIS - The Time Traveller.lnk');
     try {
-      const psScript = `& { $w = New-Object -ComObject WScript.Shell; $s = $w.CreateShortcut('${lnkFilePath.replace(/'/g, "''")}'); $s.TargetPath = '${batFilePath.replace(/'/g, "''")}'; $s.WorkingDirectory = '${projectRoot.replace(/'/g, "''")}'; $s.IconLocation = 'C:\\Windows\\System32\\shell32.dll,220'; $s.Description = 'JARVIS — The Time Traveller Autonomous Workspace'; $s.Save(); }`;
+      const psScript = `& { $w = New-Object -ComObject WScript.Shell; $s = $w.CreateShortcut('${lnkFilePath.replace(/'/g, "''")}'); $s.TargetPath = '${batFilePath.replace(/'/g, "''")}'; $s.WorkingDirectory = '${projectRoot.replace(/'/g, "''")}'; $s.IconLocation = '${icoPath.replace(/'/g, "''")},0'; $s.Description = 'JARVIS - The Time Traveller Autonomous AI Workspace'; $s.Save(); }`;
       execSync(`powershell -NoProfile -Command "${psScript.replace(/"/g, '\\"')}"`, { stdio: 'ignore' });
     } catch (lnkErr) {
       console.warn('Could not create .lnk via PowerShell:', lnkErr);
