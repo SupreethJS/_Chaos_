@@ -27,6 +27,7 @@ import {
   FileCheck,
   LogOut,
   ChevronRight,
+  ChevronLeft,
   Menu,
   X,
   Mic,
@@ -84,7 +85,32 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 export default function App() {
   // Navigation View: 'workspace' | 'history' | 'studio' | 'email' | 'documents' | 'settings' | 'orchestrator' | 'devices'
   const [activeTab, setActiveTab] = useState<'workspace' | 'history' | 'studio' | 'email' | 'documents' | 'settings' | 'orchestrator' | 'devices'>('workspace');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Sidebar open/hide state (Sandwich button)
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('chaos-sidebar-open');
+      if (saved !== null) return saved === 'true';
+      return window.innerWidth > 860;
+    }
+    return true;
+  });
+
+  const toggleSidebar = () => {
+    setSidebarOpen(prev => {
+      const next = !prev;
+      localStorage.setItem('chaos-sidebar-open', String(next));
+      return next;
+    });
+  };
+
+  const handleNavClick = (tab: 'workspace' | 'history' | 'studio' | 'email' | 'documents' | 'settings' | 'orchestrator' | 'devices') => {
+    setActiveTab(tab);
+    if (window.innerWidth <= 860) {
+      setSidebarOpen(false);
+      localStorage.setItem('chaos-sidebar-open', 'false');
+    }
+  };
 
   // Theme: 'light' | 'dark'
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -307,6 +333,18 @@ export default function App() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversations, currentConvId, isBusy]);
+
+  // Keyboard shortcut: Ctrl+B or Cmd+B to toggle sidebar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Active Conversation Helper
   const currentConversation = conversations.find(c => c.id === currentConvId) || conversations[0];
@@ -869,18 +907,21 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell">
-      {/* Mobile Sidebar Overlay Backdrop */}
-      {mobileMenuOpen && (
+    <div className={`app-shell ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}>
+      {/* Mobile / Tablet Overlay Backdrop */}
+      {sidebarOpen && (
         <div
           className="sidebar-backdrop"
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={() => {
+            setSidebarOpen(false);
+            localStorage.setItem('chaos-sidebar-open', 'false');
+          }}
           aria-label="Close navigation"
         />
       )}
 
       {/* SIDEBAR NAVIGATION */}
-      <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+      <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}>
         <div className="brand">
           <div className="brand-icon jarvis-logo-frame">
             <img src="/jarvis-logo.png" alt="JARVIS Logo" className="jarvis-logo-img" />
@@ -890,15 +931,28 @@ export default function App() {
             <span className="brand-subtitle">The Time Traveller</span>
           </div>
           <button
-            className="btn-icon"
-            style={{ display: mobileMenuOpen ? 'flex' : 'none', marginLeft: 'auto' }}
-            onClick={() => setMobileMenuOpen(false)}
+            className="btn-icon sidebar-collapse-btn"
+            onClick={() => {
+              setSidebarOpen(false);
+              localStorage.setItem('chaos-sidebar-open', 'false');
+            }}
+            title="Hide sidebar"
+            aria-label="Hide sidebar"
           >
-            <X size={18} />
+            <ChevronLeft size={18} />
           </button>
         </div>
 
-        <button className="btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={startNewConversation}>
+        <button
+          className="btn-primary"
+          style={{ width: '100%', justifyContent: 'center' }}
+          onClick={() => {
+            startNewConversation();
+            if (window.innerWidth <= 860) {
+              setSidebarOpen(false);
+            }
+          }}
+        >
           <Plus size={16} />
           <span>New Conversation</span>
         </button>
@@ -908,7 +962,7 @@ export default function App() {
           <div className="section-label">Workspace</div>
           <button
             className={`nav-btn ${activeTab === 'workspace' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('workspace'); setMobileMenuOpen(false); }}
+            onClick={() => handleNavClick('workspace')}
           >
             <Bot size={17} />
             <span>AI Workspace</span>
@@ -916,7 +970,7 @@ export default function App() {
 
           <button
             className={`nav-btn ${activeTab === 'history' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('history'); setMobileMenuOpen(false); }}
+            onClick={() => handleNavClick('history')}
           >
             <History size={17} />
             <span>Conversation History</span>
@@ -927,7 +981,7 @@ export default function App() {
 
           <button
             className={`nav-btn ${activeTab === 'studio' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('studio'); setMobileMenuOpen(false); }}
+            onClick={() => handleNavClick('studio')}
           >
             <FileText size={17} />
             <span>Document Studio</span>
@@ -935,7 +989,7 @@ export default function App() {
 
           <button
             className={`nav-btn ${activeTab === 'email' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('email'); setMobileMenuOpen(false); }}
+            onClick={() => handleNavClick('email')}
           >
             <Mail size={17} />
             <span>Email Composer</span>
@@ -943,7 +997,7 @@ export default function App() {
 
           <button
             className={`nav-btn ${activeTab === 'documents' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('documents'); setMobileMenuOpen(false); }}
+            onClick={() => handleNavClick('documents')}
           >
             <Folder size={17} />
             <span>My Documents</span>
@@ -954,7 +1008,7 @@ export default function App() {
 
           <button
             className={`nav-btn ${activeTab === 'settings' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}
+            onClick={() => handleNavClick('settings')}
           >
             <Settings size={17} />
             <span>Profile & Settings</span>
@@ -965,7 +1019,7 @@ export default function App() {
 
           <button
             className={`nav-btn ${activeTab === 'orchestrator' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('orchestrator'); setMobileMenuOpen(false); }}
+            onClick={() => handleNavClick('orchestrator')}
           >
             <Layers size={17} />
             <span>Multi-Step Tasks</span>
@@ -974,7 +1028,7 @@ export default function App() {
 
           <button
             className={`nav-btn ${activeTab === 'devices' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('devices'); setMobileMenuOpen(false); }}
+            onClick={() => handleNavClick('devices')}
           >
             <Smartphone size={17} />
             <span>Cross-Device Sync</span>
@@ -1000,7 +1054,13 @@ export default function App() {
         {/* Top Header */}
         <header className="topbar">
           <div className="topbar-left">
-            <button className="btn-icon mobile-menu-toggle" onClick={() => setMobileMenuOpen(true)} title="Open navigation">
+            <button
+              id="sandwich-menu-btn"
+              className={`btn-icon sandwich-btn ${sidebarOpen ? 'active' : ''}`}
+              onClick={toggleSidebar}
+              title={sidebarOpen ? "Hide sidebar (Ctrl+B)" : "Show sidebar (Ctrl+B)"}
+              aria-label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+            >
               <Menu size={18} />
             </button>
             <div className="topbar-title">
