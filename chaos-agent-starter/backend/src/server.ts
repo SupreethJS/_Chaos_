@@ -319,6 +319,122 @@ app.get('/api/knowledge-vault', (_req, res) => {
   });
 });
 
+// --------------------------------------------------------------------------
+// HIGH-FIDELITY REGIONAL TTS (KANNADA, TELUGU, HINDI, ENGLISH)
+// --------------------------------------------------------------------------
+const ttsAudioCache = new Map<string, Buffer>();
+
+function splitTextForTTS(text: string, maxLen = 160): string[] {
+  const sentences = text.match(/[^.!?।\n;]+[.!?।\n;]+|[^.!?।\n;,]+|.+/g) || [text];
+  const chunks: string[] = [];
+  let current = '';
+
+  for (const s of sentences) {
+    const trimmed = s.trim();
+    if (!trimmed) continue;
+    if (trimmed.length > maxLen) {
+      const words = trimmed.split(/\s+/);
+      for (const w of words) {
+        if ((current + ' ' + w).length <= maxLen) {
+          current = current ? current + ' ' + w : w;
+        } else {
+          if (current) chunks.push(current.trim());
+          current = w;
+        }
+      }
+    } else if ((current + ' ' + trimmed).length <= maxLen) {
+      current = current ? current + ' ' + trimmed : trimmed;
+    } else {
+      if (current) chunks.push(current.trim());
+      current = trimmed;
+    }
+  }
+  if (current) chunks.push(current.trim());
+  return chunks.slice(0, 5);
+}
+
+function cleanTextForTTS(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/^#{1,6}\s+.*$/gim, '')
+    .replace(/Sources & Verified Citations[\s\S]*$/i, '')
+    .replace(/ಸಂಶೋಧನಾ ಸಾರಾಂಶ[\s\S]*?(?=\d+\.|$)/i, '')
+    .replace(/ಮೂಲಗಳು ಮತ್ತು ಪರಿಶೀಲಿಸಿದ ಉಲ್ಲೇಖಗಳು[\s\S]*$/i, '')
+    .replace(/పరిశోధన సారాంశం[\s\S]*?(?=\d+\.|$)/i, '')
+    .replace(/మూలాలు మరియు ధృవీకరించబడిన సూచనలు[\s\S]*$/i, '')
+    .replace(/सत्यापित स्रोत एवं संदर्भ[\s\S]*$/i, '')
+    .replace(/शोध सारांश[\s\S]*?(?=\d+\.|$)/i, '')
+    .replace(/\[\d+\]/g, '')
+    .replace(/https?:\/\/\S+/g, '')
+    .replace(/[•\*\-#_]/g, '')
+    .replace(/^\s*\d+\.\s*[^:\n]+[:\n]/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+app.get('/api/tts', async (req, res) => {
+  const rawText = String(req.query.text || '').trim();
+  const rawLang = String(req.query.lang || 'en').toLowerCase();
+  const lang = ['kn', 'te', 'hi', 'en'].includes(rawLang) ? rawLang : 'en';
+
+  const cleaned = cleanTextForTTS(rawText);
+  if (!cleaned) {
+    return res.status(400).send('No speakable text provided');
+  }
+
+  // Take the first ~340 chars or 3-4 sentences max for voice-over overview
+  const sentences = cleaned.split(/(?<=[.?!।])\s+/);
+  const speechText = sentences.slice(0, 4).join(' ').slice(0, 340).trim();
+
+  const cacheKey = `${lang}_${speechText}`;
+  if (ttsAudioCache.has(cacheKey)) {
+    const cachedBuf = ttsAudioCache.get(cacheKey)!;
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Content-Length', cachedBuf.length);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.send(cachedBuf);
+  }
+
+  const chunks = splitTextForTTS(speechText);
+  const buffers: Buffer[] = [];
+
+  try {
+    for (const chunk of chunks) {
+      if (!chunk.trim()) continue;
+      const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(chunk)}`;
+      const googleRes = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Referer': 'https://translate.google.com/'
+        }
+      });
+      if (googleRes.ok) {
+        const ab = await googleRes.arrayBuffer();
+        buffers.push(Buffer.from(ab));
+      }
+    }
+
+    if (buffers.length === 0) {
+      return res.status(502).send('Failed to generate speech audio');
+    }
+
+    const combined = Buffer.concat(buffers);
+    if (ttsAudioCache.size > 200) {
+      const firstKey = ttsAudioCache.keys().next().value;
+      if (firstKey) ttsAudioCache.delete(firstKey);
+    }
+    ttsAudioCache.set(cacheKey, combined);
+
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Content-Length', combined.length);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.send(combined);
+  } catch (err) {
+    console.error('[TTS Service Error]:', err);
+    return res.status(500).send('TTS processing error');
+  }
+});
+
 const pdfSchema = z.object({
   title: z.string().trim().min(1).max(180),
   content: z.string().trim().min(1).max(100000)

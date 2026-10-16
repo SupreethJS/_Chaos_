@@ -13,6 +13,8 @@ interface VoiceModeModalProps {
   currentConversationTitle?: string;
   currentLanguage?: VoiceLanguage;
   onLanguageChange?: (lang: VoiceLanguage) => void;
+  isSpeakingVoiceOver?: boolean;
+  onStopVoiceOver?: () => void;
 }
 
 const langCodeMap: Record<VoiceLanguage, string> = {
@@ -45,6 +47,8 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
   currentConversationTitle = 'Active Chat',
   currentLanguage = 'auto',
   onLanguageChange,
+  isSpeakingVoiceOver = false,
+  onStopVoiceOver,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -52,6 +56,7 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
   const isComponentMounted = useRef<boolean>(true);
   const isRecognizingRef = useRef<boolean>(false);
   const isSpeakingRef = useRef<boolean>(false);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // States
   const [selectedLang, setSelectedLang] = useState<VoiceLanguage>(currentLanguage || 'auto');
@@ -88,14 +93,20 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
 
     const speechClean = display
       .replace(/Sources & Verified Citations[\s\S]*$/i, '')
+      .replace(/ಮೂಲಗಳು ಮತ್ತು ಪರಿಶೀಲಿಸಿದ ಉಲ್ಲೇಖಗಳು[\s\S]*$/i, '')
+      .replace(/ಸಂಶೋಧನಾ ಸಾರಾಂಶ[\s\S]*?(?=\d+\.|$)/i, '')
+      .replace(/మూలాలు మరియు ధృవీకరించబడిన సూచనలు[\s\S]*$/i, '')
+      .replace(/పరిశోధన సారాంశం[\s\S]*?(?=\d+\.|$)/i, '')
+      .replace(/सत्यापित स्रोत एवं संदर्भ[\s\S]*$/i, '')
+      .replace(/शोध सारांश[\s\S]*?(?=\d+\.|$)/i, '')
       .replace(/\[\d+\]/g, '')
       .replace(/https?:\/\/\S+/g, '')
       .replace(/[•]/g, '')
       .replace(/\n+/g, ' ')
       .trim();
 
-    const sentences = speechClean.split(/(?<=[.?!])\s+/);
-    const speech = sentences.slice(0, 3).join(' ').slice(0, 320).trim();
+    const sentences = speechClean.split(/(?<=[.?!।])\s+/);
+    const speech = sentences.slice(0, 4).join(' ').slice(0, 360).trim();
     return { display, speech };
   };
 
@@ -120,11 +131,37 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
     }
   };
 
-  // Stop TTS speech
+  // Stop TTS speech & active audio streams
   const stopSpeech = () => {
+    // 1. Cancel browser speech synthesis immediately
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      isSpeakingRef.current = false;
+      try {
+        window.speechSynthesis.cancel();
+      } catch {
+        // ignore
+      }
+    }
+
+    // 2. Cleanly unload any active audio element without firing synthetic error events
+    if (currentAudioRef.current) {
+      const el = currentAudioRef.current;
+      currentAudioRef.current = null;
+      try {
+        el.onended = null;
+        el.onerror = null;
+        el.onplay = null;
+        el.onpause = null;
+        el.pause();
+        el.currentTime = 0;
+        el.removeAttribute('src');
+        el.load();
+      } catch {
+        // ignore
+      }
+    }
+    isSpeakingRef.current = false;
+    if (onStopVoiceOver) {
+      onStopVoiceOver();
     }
   };
 
@@ -140,15 +177,14 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
     startListening();
   };
 
-  // Speak text using Web Speech API with automatic mic feedback isolation
+  // Speak text using high-fidelity regional audio stream with feedback isolation
   const speakText = (text: string) => {
-    if (!autoSpeak || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    if (!autoSpeak) return;
     try {
       stopSpeech();
       // Temporarily mute microphone to avoid hearing own laptop speakers
       pauseListening();
       isSpeakingRef.current = true;
-      setVoiceStatus('JARVIS speaking...');
 
       const { speech } = cleanVoiceDisplayText(text);
       if (!speech) {
@@ -157,28 +193,28 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
         return;
       }
 
-      const utterance = new SpeechSynthesisUtterance(speech);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-
       // Select regional voice tag
       const detected = detectVoiceScript(speech);
-      const effectiveLang = selectedLang !== 'auto' ? selectedLang : detected;
-      const targetLangCode = langCodeMap[effectiveLang] || 'en-US';
-      utterance.lang = targetLangCode;
+      const effectiveLang = selectedLang !== 'auto' ? selectedLang : (detected !== 'en' ? detected : 'en');
+      const langNames: Record<string, string> = {
+        kn: 'ಕನ್ನಡ (Kannada)',
+        te: 'తెలుగు (Telugu)',
+        hi: 'हिन्दी (Hindi)',
+        en: 'English'
+      };
+      setVoiceStatus(`JARVIS speaking in ${langNames[effectiveLang] || 'English'}...`);
 
-      const voices = window.speechSynthesis.getVoices();
-      const match = voices.find(
-        (v) =>
-          v.lang.toLowerCase().startsWith(effectiveLang) ||
-          v.lang.toLowerCase().replace('_', '-').startsWith(targetLangCode.toLowerCase())
-      );
-      if (match) {
-        utterance.voice = match;
-      }
+      // 1. Play high-fidelity neural regional voice stream from backend (/api/tts)
+      const audioUrl = `${backendUrl}/api/tts?lang=${encodeURIComponent(effectiveLang)}&text=${encodeURIComponent(speech)}`;
+      const audio = new Audio();
+      audio.src = audioUrl;
+      currentAudioRef.current = audio;
 
-      utterance.onend = () => {
+      audio.onended = () => {
         isSpeakingRef.current = false;
+        if (currentAudioRef.current === audio) {
+          currentAudioRef.current = null;
+        }
         // Wait 500ms for room echo / speaker decay before resuming mic
         setTimeout(() => {
           if (isComponentMounted.current && isListening) {
@@ -188,15 +224,29 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
         }, 500);
       };
 
-      utterance.onerror = () => {
+      audio.onerror = (e) => {
+        console.warn('Voice modal audio stream error:', e);
         isSpeakingRef.current = false;
+        if (currentAudioRef.current === audio) {
+          currentAudioRef.current = null;
+        }
         if (isComponentMounted.current && isListening) {
           setVoiceStatus('Listening intently...');
           startListening();
         }
       };
 
-      window.speechSynthesis.speak(utterance);
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((playErr) => {
+          console.warn('Voice modal playback error or blocked by autoplay policy:', playErr);
+          isSpeakingRef.current = false;
+          if (currentAudioRef.current === audio) {
+            currentAudioRef.current = null;
+          }
+          if (isListening) startListening();
+        });
+      }
     } catch {
       isSpeakingRef.current = false;
     }
@@ -346,6 +396,23 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({
       pauseListening();
     };
   }, [isOpen]);
+
+  // Respond to global voice-over speaking state (prevent mic hearing voice-over from main app)
+  useEffect(() => {
+    if (isSpeakingVoiceOver) {
+      pauseListening();
+      isSpeakingRef.current = true;
+      setVoiceStatus('JARVIS speaking voice-over...');
+    } else if (isSpeakingRef.current && !currentAudioRef.current) {
+      isSpeakingRef.current = false;
+      setTimeout(() => {
+        if (isComponentMounted.current && isListening) {
+          setVoiceStatus('Listening intently...');
+          startListening();
+        }
+      }, 500);
+    }
+  }, [isSpeakingVoiceOver]);
 
   // WebGL Dynamic Shader Sphere Canvas
   useEffect(() => {

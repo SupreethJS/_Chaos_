@@ -106,6 +106,8 @@ export default function App() {
   const [selectedLanguage, setSelectedLanguage] = useState<'auto' | 'en' | 'kn' | 'te' | 'hi'>(() => {
     return (localStorage.getItem('chaos-selected-lang') as 'auto' | 'en' | 'kn' | 'te' | 'hi') || 'auto';
   });
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+
 
   // Module 3: History Search & Rename
   const [historySearchQuery, setHistorySearchQuery] = useState('');
@@ -346,10 +348,33 @@ export default function App() {
   };
 
   const stopVoiceOver = () => {
+    // 1. Immediately cancel any active speech synthesis
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      setSpeakingMsgId(null);
+      try {
+        window.speechSynthesis.cancel();
+      } catch {
+        // ignore
+      }
     }
+
+    // 2. Cleanly stop and detach HTML5 audio element without triggering synthetic error events
+    if (currentAudioRef.current) {
+      const el = currentAudioRef.current;
+      currentAudioRef.current = null;
+      try {
+        el.onended = null;
+        el.onerror = null;
+        el.onplay = null;
+        el.onpause = null;
+        el.pause();
+        el.currentTime = 0;
+        el.removeAttribute('src');
+        el.load();
+      } catch {
+        // ignore
+      }
+    }
+    setSpeakingMsgId(null);
   };
 
   const detectClientLanguage = (text: string): 'kn' | 'te' | 'hi' | 'en' => {
@@ -364,7 +389,6 @@ export default function App() {
   };
 
   const playVoiceOver = (text: string, messageId?: string, forcedLang?: string) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     try {
       stopVoiceOver();
 
@@ -389,43 +413,46 @@ export default function App() {
 
       if (!spoken) return;
 
-      const utterance = new SpeechSynthesisUtterance(spoken);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-
-      const lang = forcedLang && forcedLang !== 'auto' ? forcedLang : detectClientLanguage(spoken);
-      const langCodeMap: Record<string, string> = {
-        kn: 'kn-IN',
-        te: 'te-IN',
-        hi: 'hi-IN',
-        en: 'en-US'
-      };
-      const targetLangCode = langCodeMap[lang] || 'en-US';
-      utterance.lang = targetLangCode;
-
-      const voices = window.speechSynthesis.getVoices();
-      const matchingVoice = voices.find(
-        (v) =>
-          v.lang.toLowerCase().startsWith(lang) ||
-          v.lang.toLowerCase().replace('_', '-').startsWith(targetLangCode.toLowerCase())
-      );
-      if (matchingVoice) {
-        utterance.voice = matchingVoice;
-      }
+      const detected = detectClientLanguage(spoken);
+      const lang = forcedLang && forcedLang !== 'auto'
+        ? (forcedLang as 'kn' | 'te' | 'hi' | 'en')
+        : (detected !== 'en' ? detected : (selectedLanguage !== 'auto' ? selectedLanguage : 'en'));
 
       if (messageId) {
         setSpeakingMsgId(messageId);
       }
 
-      utterance.onend = () => {
-        setSpeakingMsgId(null);
+      // 1. Stream high-fidelity native regional speech audio from backend /api/tts
+      const audioUrl = `${API}/api/tts?lang=${encodeURIComponent(lang)}&text=${encodeURIComponent(spoken)}`;
+      const audio = new Audio();
+      audio.src = audioUrl;
+      currentAudioRef.current = audio;
+
+      audio.onended = () => {
+        if (currentAudioRef.current === audio) {
+          currentAudioRef.current = null;
+          setSpeakingMsgId(null);
+        }
       };
 
-      utterance.onerror = () => {
-        setSpeakingMsgId(null);
+      audio.onerror = (e) => {
+        console.warn('Backend TTS stream error event:', e);
+        if (currentAudioRef.current === audio) {
+          currentAudioRef.current = null;
+          setSpeakingMsgId(null);
+        }
       };
 
-      window.speechSynthesis.speak(utterance);
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((playErr) => {
+          console.warn('Audio playback error or blocked by autoplay policy:', playErr);
+          if (currentAudioRef.current === audio) {
+            currentAudioRef.current = null;
+            setSpeakingMsgId(null);
+          }
+        });
+      }
     } catch (err) {
       console.warn('Voice-over error:', err);
       setSpeakingMsgId(null);
@@ -1185,7 +1212,9 @@ export default function App() {
                             ) : (
                               <>
                                 <Volume2 size={12} color="#3525cd" />
-                                <span>Voice-Over</span>
+                                <span>
+                                  {msg.language === 'kn' ? 'Voice (ಕನ್ನಡ)' : msg.language === 'te' ? 'Voice (తెలుగు)' : msg.language === 'hi' ? 'Voice (हिन्दी)' : 'Voice-Over'}
+                                </span>
                               </>
                             )}
                           </button>
@@ -2043,6 +2072,8 @@ export default function App() {
           setSelectedLanguage(lang);
           localStorage.setItem('chaos-selected-lang', lang);
         }}
+        isSpeakingVoiceOver={!!speakingMsgId}
+        onStopVoiceOver={stopVoiceOver}
       />
     </div>
   );
