@@ -38,6 +38,12 @@ import {
   Volume2,
   VolumeX,
   Globe,
+  Paperclip,
+  Image,
+  Telescope,
+  FileUp,
+  Maximize2,
+  Eye,
 } from 'lucide-react';
 import { LoginPage } from './LoginPage';
 import { VoiceModeModal } from './VoiceModeModal';
@@ -46,6 +52,18 @@ import { CrossDeviceHandover } from './CrossDeviceHandover';
 import { PromptWaveBackground } from './PromptWaveBackground';
 
 // Data Models
+export interface ChatAttachment {
+  id: string;
+  type: 'photo' | 'file';
+  name: string;
+  size: number;
+  mimeType?: string;
+  dataUrl?: string;
+  textContent?: string;
+}
+
+export type ComposerMode = 'standard' | 'web_search' | 'create_image' | 'deep_research';
+
 interface SourceCitation {
   id: number;
   title: string;
@@ -60,6 +78,9 @@ interface Message {
   timestamp: string;
   sources?: SourceCitation[];
   language?: string;
+  attachments?: ChatAttachment[];
+  imageUrl?: string;
+  mode?: ComposerMode;
 }
 
 interface Conversation {
@@ -134,8 +155,15 @@ export default function App() {
   });
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
 
+  // ChatGPT-style tools popup and upload attachments state
+  const [showToolsMenu, setShowToolsMenu] = useState(false);
+  const [activeMode, setActiveMode] = useState<ComposerMode>('standard');
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
+  const [previewImageModal, setPreviewImageModal] = useState<string | null>(null);
 
-  // Module 3: History Search & Rename
+  const toolsMenuRef = useRef<HTMLDivElement | null>(null);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [historySearchQuery, setHistorySearchQuery] = useState('');
   const [editingConvId, setEditingConvId] = useState<string | null>(null);
   const [editingTitleText, setEditingTitleText] = useState('');
@@ -347,7 +375,104 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Active Conversation Helper
+  // Close tools menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (toolsMenuRef.current && !toolsMenuRef.current.contains(e.target as Node)) {
+        setShowToolsMenu(false);
+      }
+    };
+    if (showToolsMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showToolsMenu]);
+
+  // Handle Photo & Document Attachments
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setAttachments((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            type: 'photo',
+            name: file.name,
+            size: file.size,
+            mimeType: file.type || 'image/png',
+            dataUrl: reader.result as string
+          }
+        ]);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+    setShowToolsMenu(false);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+      const isText =
+        file.type.startsWith('text/') ||
+        /\.(txt|md|json|csv|js|ts|tsx|py|html|css|xml|yaml|yml)$/i.test(file.name);
+
+      if (isText) {
+        reader.onload = () => {
+          setAttachments((prev) => [
+            ...prev,
+            {
+              id: crypto.randomUUID(),
+              type: 'file',
+              name: file.name,
+              size: file.size,
+              mimeType: file.type || 'text/plain',
+              textContent: reader.result as string
+            }
+          ]);
+        };
+        reader.readAsText(file);
+      } else {
+        reader.onload = () => {
+          setAttachments((prev) => [
+            ...prev,
+            {
+              id: crypto.randomUUID(),
+              type: 'file',
+              name: file.name,
+              size: file.size,
+              mimeType: file.type || 'application/octet-stream',
+              dataUrl: reader.result as string,
+              textContent: `[Binary Document Asset: ${file.name}, Size: ${(file.size / 1024).toFixed(1)} KB]`
+            }
+          ]);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    e.target.value = '';
+    setShowToolsMenu(false);
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (!bytes) return '0 B';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
   const currentConversation = conversations.find(c => c.id === currentConvId) || conversations[0];
 
   // ==========================================
@@ -518,20 +643,41 @@ export default function App() {
     textToSend?: string,
     options?: { playVoiceOver?: boolean; language?: string }
   ): Promise<string | void> => {
-    const text = (textToSend || inputMessage).trim();
-    if (!text || isBusy) return;
+    const rawText = (textToSend || inputMessage).trim();
+    const currentAttachments = [...attachments];
+    const currentMode = activeMode;
+
+    if (!rawText && currentAttachments.length === 0 && currentMode !== 'create_image') return;
+    if (isBusy) return;
+
+    // Reset composer attachments and mode
+    setAttachments([]);
+    if (activeMode !== 'standard') setActiveMode('standard');
 
     stopVoiceOver();
 
+    let displayPrompt = rawText;
+    if (!displayPrompt) {
+      if (currentMode === 'create_image') {
+        displayPrompt = 'Generate high-fidelity AI artwork';
+      } else if (currentAttachments.length > 0) {
+        displayPrompt = `Analyze uploaded ${currentAttachments.length} file${currentAttachments.length > 1 ? 's' : ''}: ${currentAttachments.map(a => a.name).join(', ')}`;
+      } else {
+        displayPrompt = 'Synthesize research';
+      }
+    }
+
     const userLanguage = options?.language || selectedLanguage;
-    const detectedLang = detectClientLanguage(text);
+    const detectedLang = detectClientLanguage(displayPrompt);
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: 'user',
-      content: text,
+      content: displayPrompt,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      language: userLanguage !== 'auto' ? userLanguage : detectedLang
+      language: userLanguage !== 'auto' ? userLanguage : detectedLang,
+      attachments: currentAttachments.length > 0 ? currentAttachments : undefined,
+      mode: currentMode !== 'standard' ? currentMode : undefined
     };
 
     let updatedConvs = [...conversations];
@@ -539,7 +685,7 @@ export default function App() {
     if (!conv) {
       conv = {
         id: crypto.randomUUID(),
-        title: text.slice(0, 36) + (text.length > 36 ? '…' : ''),
+        title: displayPrompt.slice(0, 36) + (displayPrompt.length > 36 ? '…' : ''),
         createdAt: Date.now(),
         updatedAt: Date.now(),
         messages: []
@@ -548,7 +694,7 @@ export default function App() {
       setCurrentConvId(conv.id);
     } else {
       if (conv.messages.length === 0) {
-        conv.title = text.slice(0, 36) + (text.length > 36 ? '…' : '');
+        conv.title = displayPrompt.slice(0, 36) + (displayPrompt.length > 36 ? '…' : '');
       }
       conv.updatedAt = Date.now();
     }
@@ -557,7 +703,16 @@ export default function App() {
     saveConversations(updatedConvs);
     setInputMessage('');
     setIsBusy(true);
-    setStatusMessage('Searching and synthesizing sources…');
+
+    if (currentMode === 'create_image') {
+      setStatusMessage('Synthesizing neural latent diffusion graphic…');
+    } else if (currentMode === 'deep_research') {
+      setStatusMessage('Executing deep multi-temporal research dossier…');
+    } else if (currentAttachments.length > 0) {
+      setStatusMessage('Ingesting and analyzing uploaded visual & document assets…');
+    } else {
+      setStatusMessage('Searching and synthesizing sources…');
+    }
 
     try {
       const historyPayload = conv.messages.slice(-10).map(m => ({ role: m.role, content: m.content }));
@@ -565,9 +720,11 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: text,
+          message: rawText || displayPrompt,
           language: userLanguage,
-          history: historyPayload
+          history: historyPayload,
+          attachments: currentAttachments,
+          mode: currentMode
         })
       });
 
@@ -585,6 +742,8 @@ export default function App() {
         content: cleanAnswerText(data.answer || 'Research synthesis completed.'),
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         language: data.language || userLanguage,
+        imageUrl: data.imageUrl,
+        mode: currentMode !== 'standard' ? currentMode : undefined,
         sources: data.sources || [
           { id: 1, title: 'National Renewable Energy Laboratory (NREL)', year: '2025', url: 'https://www.nrel.gov' },
           { id: 2, title: 'Nature Energy Insights', year: '2025', url: 'https://www.nature.com/nenergy' }
@@ -1204,9 +1363,96 @@ export default function App() {
                         <span className="msg-time">{msg.timestamp}</span>
                       </div>
                       <div className="msg-bubble">
+                        {/* Mode badge if applicable */}
+                        {msg.mode === 'deep_research' && (
+                          <div className="msg-mode-tag deep">
+                            <Telescope size={12} />
+                            <span>Deep Research Intelligence</span>
+                          </div>
+                        )}
+                        {msg.mode === 'web_search' && (
+                          <div className="msg-mode-tag web">
+                            <Globe size={12} />
+                            <span>Live Web Intelligence</span>
+                          </div>
+                        )}
+                        {msg.mode === 'create_image' && (
+                          <div className="msg-mode-tag image">
+                            <Image size={12} />
+                            <span>AI Visual Synthesis</span>
+                          </div>
+                        )}
+
+                        {/* User uploaded attachments if present */}
+                        {msg.attachments && msg.attachments.length > 0 && (
+                          <div className="msg-attachments-container">
+                            {msg.attachments.map(att => (
+                              att.type === 'photo' ? (
+                                <div
+                                  key={att.id}
+                                  className="msg-photo-card"
+                                  onClick={() => att.dataUrl && setPreviewImageModal(att.dataUrl)}
+                                  title="Click to view high-resolution photo"
+                                >
+                                  <img src={att.dataUrl} alt={att.name} className="msg-photo-thumb" />
+                                  <div className="msg-photo-label">
+                                    <Eye size={11} />
+                                    <span>{att.name}</span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div key={att.id} className="msg-file-card">
+                                  <div className="msg-file-icon-wrap">
+                                    <FileText size={16} />
+                                  </div>
+                                  <div className="msg-file-details">
+                                    <strong className="msg-file-name">{att.name}</strong>
+                                    <small className="msg-file-size">{formatFileSize(att.size)}</small>
+                                  </div>
+                                </div>
+                              )
+                            ))}
+                          </div>
+                        )}
+
                         <div style={{ whiteSpace: 'pre-wrap' }}>
                           {msg.role === 'assistant' ? cleanAnswerText(msg.content) : msg.content}
                         </div>
+
+                        {/* AI Generated Image Result */}
+                        {msg.imageUrl && (
+                          <div className="msg-generated-image-card">
+                            <div className="gen-image-preview" onClick={() => setPreviewImageModal(msg.imageUrl || null)}>
+                              <img src={msg.imageUrl} alt="AI Generated Graphic" className="gen-image" />
+                              <div className="gen-image-badge">
+                                <Sparkles size={12} />
+                                <span>AI Generated Artwork</span>
+                              </div>
+                            </div>
+                            <div className="gen-image-toolbar">
+                              <a
+                                href={msg.imageUrl}
+                                download="jarvis-ai-art.png"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="action-btn"
+                                title="Download high resolution image"
+                              >
+                                <Download size={12} />
+                                <span>Download Image</span>
+                              </a>
+                              <button
+                                type="button"
+                                className="action-btn"
+                                onClick={() => setPreviewImageModal(msg.imageUrl || null)}
+                                title="Fullscreen preview"
+                              >
+                                <Maximize2 size={12} />
+                                <span>Fullscreen</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
 
                         {/* Source Citations */}
                         {msg.sources && msg.sources.length > 0 && (
@@ -1362,7 +1608,216 @@ export default function App() {
               </div>
 
               <div className="chat-composer">
+                {/* Active Mode Banner / Attachment Chips Bar */}
+                {(activeMode !== 'standard' || attachments.length > 0) && (
+                  <div className="composer-attachments-bar">
+                    {activeMode === 'web_search' && (
+                      <div className="composer-mode-pill web">
+                        <Globe size={13} />
+                        <span>Web search active</span>
+                        <button
+                          type="button"
+                          className="mode-pill-close"
+                          onClick={() => setActiveMode('standard')}
+                          title="Disable web search"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    )}
+                    {activeMode === 'deep_research' && (
+                      <div className="composer-mode-pill research">
+                        <Telescope size={13} />
+                        <span>Deep research active</span>
+                        <button
+                          type="button"
+                          className="mode-pill-close"
+                          onClick={() => setActiveMode('standard')}
+                          title="Disable deep research"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    )}
+                    {activeMode === 'create_image' && (
+                      <div className="composer-mode-pill image">
+                        <Image size={13} />
+                        <span>Create image mode</span>
+                        <button
+                          type="button"
+                          className="mode-pill-close"
+                          onClick={() => setActiveMode('standard')}
+                          title="Exit create image"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    )}
+
+                    {attachments.map((att) => (
+                      <div key={att.id} className={`composer-attachment-chip ${att.type}`}>
+                        {att.type === 'photo' ? (
+                          <>
+                            <img src={att.dataUrl} alt={att.name} className="attachment-chip-thumb" />
+                            <span className="attachment-chip-name">{att.name}</span>
+                            <button
+                              type="button"
+                              className="attachment-remove-btn"
+                              onClick={() => removeAttachment(att.id)}
+                              title="Remove photo"
+                            >
+                              <X size={12} />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <FileText size={14} className="attachment-chip-icon" />
+                            <div className="attachment-chip-info">
+                              <span className="attachment-chip-name">{att.name}</span>
+                              <span className="attachment-chip-size">{formatFileSize(att.size)}</span>
+                            </div>
+                            <button
+                              type="button"
+                              className="attachment-remove-btn"
+                              onClick={() => removeAttachment(att.id)}
+                              title="Remove file"
+                            >
+                              <X size={12} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="composer-input-row">
+                  {/* ChatGPT-style '+' tools popup button */}
+                  <div className="composer-tools-anchor" ref={toolsMenuRef}>
+                    <button
+                      id="composer-plus-btn"
+                      className={`composer-plus-btn ${showToolsMenu ? 'active' : ''}`}
+                      type="button"
+                      onClick={() => setShowToolsMenu((prev) => !prev)}
+                      title="Add photos, files, or select intelligence tools"
+                      aria-label="Add photos, files, or select intelligence tools"
+                      aria-expanded={showToolsMenu}
+                    >
+                      <Plus size={18} />
+                    </button>
+
+                    {showToolsMenu && (
+                      <div className="composer-tools-popup" role="menu">
+                        <button
+                          className="composer-tool-item"
+                          type="button"
+                          onClick={() => {
+                            setShowToolsMenu(false);
+                            photoInputRef.current?.click();
+                          }}
+                        >
+                          <div className="tool-item-icon photo">
+                            <Paperclip size={17} />
+                          </div>
+                          <div className="tool-item-text">
+                            <strong>Add photos</strong>
+                            <span>Upload images for visual analysis</span>
+                          </div>
+                        </button>
+
+                        <button
+                          className={`composer-tool-item ${activeMode === 'web_search' ? 'active' : ''}`}
+                          type="button"
+                          onClick={() => {
+                            setActiveMode((prev) => (prev === 'web_search' ? 'standard' : 'web_search'));
+                            setShowToolsMenu(false);
+                          }}
+                        >
+                          <div className="tool-item-icon web">
+                            <Globe size={17} />
+                          </div>
+                          <div className="tool-item-text">
+                            <strong>Web search</strong>
+                            <span>Search live web with citations</span>
+                          </div>
+                          {activeMode === 'web_search' && <Check size={14} className="tool-check-icon" />}
+                        </button>
+
+                        <button
+                          className={`composer-tool-item ${activeMode === 'create_image' ? 'active' : ''}`}
+                          type="button"
+                          onClick={() => {
+                            setActiveMode((prev) => (prev === 'create_image' ? 'standard' : 'create_image'));
+                            setShowToolsMenu(false);
+                          }}
+                        >
+                          <div className="tool-item-icon image">
+                            <Image size={17} />
+                          </div>
+                          <div className="tool-item-text">
+                            <strong>Create image</strong>
+                            <span>Generate AI illustrations</span>
+                          </div>
+                          {activeMode === 'create_image' && <Check size={14} className="tool-check-icon" />}
+                        </button>
+
+                        <button
+                          className={`composer-tool-item ${activeMode === 'deep_research' ? 'active' : ''}`}
+                          type="button"
+                          onClick={() => {
+                            setActiveMode((prev) => (prev === 'deep_research' ? 'standard' : 'deep_research'));
+                            setShowToolsMenu(false);
+                          }}
+                        >
+                          <div className="tool-item-icon research">
+                            <Telescope size={17} />
+                          </div>
+                          <div className="tool-item-text">
+                            <strong>Deep research</strong>
+                            <span>Multi-step temporal dossier</span>
+                          </div>
+                          {activeMode === 'deep_research' && <Check size={14} className="tool-check-icon" />}
+                        </button>
+
+                        <button
+                          className="composer-tool-item"
+                          type="button"
+                          onClick={() => {
+                            setShowToolsMenu(false);
+                            fileInputRef.current?.click();
+                          }}
+                        >
+                          <div className="tool-item-icon file">
+                            <FileUp size={17} />
+                          </div>
+                          <div className="tool-item-text">
+                            <strong>Add files</strong>
+                            <span>Upload PDFs, code, CSVs, or text</span>
+                          </div>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Hidden File Inputs */}
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={handlePhotoSelect}
+                  />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.txt,.md,.json,.csv,.js,.ts,.tsx,.py,.html,.css,.doc,.docx"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={handleFileSelect}
+                  />
+
+                  {/* Mic button */}
                   <button
                     className="composer-mic-btn"
                     type="button"
@@ -1372,13 +1827,18 @@ export default function App() {
                   >
                     <Mic size={18} />
                   </button>
+
                   <textarea
                     className="composer-textarea"
                     placeholder={
-                      selectedLanguage === 'kn'
+                      activeMode === 'create_image'
+                        ? 'Describe the image you want JARVIS to generate...'
+                        : attachments.length > 0
+                        ? 'Ask a question or request analysis of the uploaded files...'
+                        : selectedLanguage === 'kn'
                         ? 'ಕನ್ನಡದಲ್ಲಿ ಪ್ರಶ್ನೆಯನ್ನು ಕೇಳಿ ಅಥವಾ ಮಾತನಾಡಲು ಮೈಕ್ ಒತ್ತಿರಿ...'
                         : selectedLanguage === 'te'
-                        ? 'తెలుగులో ప్రశ్నను అడగండి లేదా మాట్లాడటానికి మైక్ నొక్కండి...'
+                        ? 'తెలుగులో ప్రశ్నను అడಗಂಡಿ లేదా మాట్లాడటానికి మైక్ నొక్కండి...'
                         : selectedLanguage === 'hi'
                         ? 'हिन्दी में प्रश्न पूछें या बोलने के लिए माइक दबाएं...'
                         : 'Ask a question in Kannada, Telugu, Hindi, or English...'
@@ -1395,8 +1855,9 @@ export default function App() {
                   />
                   <button
                     className="composer-send-btn"
-                    disabled={!inputMessage.trim() || isBusy}
+                    disabled={(!inputMessage.trim() && attachments.length === 0 && activeMode !== 'create_image') || isBusy}
                     onClick={() => handleSendMessage()}
+                    title="Send prompt to JARVIS"
                   >
                     <Send size={18} />
                   </button>
@@ -2137,6 +2598,47 @@ export default function App() {
         isSpeakingVoiceOver={!!speakingMsgId}
         onStopVoiceOver={stopVoiceOver}
       />
+
+      {/* Fullscreen High-Resolution Image Preview Modal */}
+      {previewImageModal && (
+        <div
+          className="image-preview-modal-backdrop"
+          onClick={() => setPreviewImageModal(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="image-preview-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="modal-preview-close-btn"
+              onClick={() => setPreviewImageModal(null)}
+              title="Close image preview"
+              aria-label="Close"
+            >
+              <X size={20} />
+            </button>
+            <img src={previewImageModal} alt="High resolution preview" className="modal-preview-img" />
+            <div className="modal-preview-bar">
+              <a
+                href={previewImageModal}
+                download="jarvis-visual-asset.png"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary"
+              >
+                <Download size={15} />
+                <span>Download Asset</span>
+              </a>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setPreviewImageModal(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
