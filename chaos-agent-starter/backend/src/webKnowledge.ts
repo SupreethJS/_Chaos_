@@ -1,4 +1,5 @@
 import { SourceCitation } from './knowledgeDatabase.js';
+import { isSarvamConfigured, translateWithSarvam } from './sarvamService.js';
 
 export type SupportedLanguage = 'en' | 'kn' | 'te' | 'hi';
 
@@ -63,6 +64,19 @@ export async function translateText(
   const cacheKey = `${sourceLang}_${targetLang}_${cleanSource}`;
   if (translationCache.has(cacheKey)) {
     return translationCache.get(cacheKey)!;
+  }
+
+  // 1. Prioritize Sarvam AI Mayura Translation for authentic Indic phrasing
+  if (isSarvamConfigured()) {
+    try {
+      const sarvamTranslated = await translateWithSarvam(cleanSource, targetLang, sourceLang);
+      if (sarvamTranslated && sarvamTranslated.trim().length > 0) {
+        translationCache.set(cacheKey, sarvamTranslated);
+        return sarvamTranslated;
+      }
+    } catch (sarvamErr) {
+      console.warn('[Sarvam Translate error in webKnowledge, using fallback]:', sarvamErr);
+    }
   }
 
   try {

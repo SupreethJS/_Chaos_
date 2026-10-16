@@ -21,7 +21,7 @@ export interface KnowledgeEntry {
   summary: string;
   fullAnswer: string;
   sources: SourceCitation[];
-  provider: 'live-web-search' | 'cached-web-vault' | 'ai-synthesized';
+  provider: 'live-web-search' | 'cached-web-vault' | 'ai-synthesized' | 'sarvam-indic-ai';
   createdAt: string;
   updatedAt: string;
   hitCount: number;

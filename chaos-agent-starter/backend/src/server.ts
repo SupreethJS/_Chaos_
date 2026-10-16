@@ -11,6 +11,14 @@ import PDFDocument from 'pdfkit';
 import { Resend } from 'resend';
 import { findKnowledge, saveKnowledge, getAllKnowledge, normalizeQueryKey } from './knowledgeDatabase.js';
 import { fetchLiveWebResearch, cleanSpecialCharacters, detectLanguage, SupportedLanguage } from './webKnowledge.js';
+import {
+  isSarvamConfigured,
+  getSarvamConfig,
+  synthesizeSarvamSpeech,
+  chatWithSarvam,
+  translateWithSarvam,
+  getRegionalLanguageName
+} from './sarvamService.js';
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
@@ -22,11 +30,18 @@ const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPE
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 app.get('/api/health', (_req, res) => {
+  const sarvam = getSarvamConfig();
   res.json({
     ok: true,
     service: 'jarvis-time-traveller-backend',
     capabilities: {
       ai: Boolean(openai),
+      sarvam: sarvam.configured,
+      sarvamModels: {
+        tts: sarvam.ttsModel,
+        chat: sarvam.chatModel,
+        speaker: sarvam.speaker
+      },
       email: Boolean(resend && process.env.EMAIL_FROM && process.env.EMAIL_SEND_ENABLED === 'true'),
       pdf: true,
       cloudHistory: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
@@ -517,7 +532,51 @@ You can inspect the generated artwork below, download it directly, view it in fu
     });
   }
 
-  // 3. If OpenAI is configured, synthesize with LLM using the live web ground truth
+  // 3a. Prioritize Sarvam AI Indic LLM for regional languages (Kannada, Telugu, Hindi)
+  if (isSarvamConfigured() && ['kn', 'te', 'hi'].includes(targetLang)) {
+    try {
+      const model = getSarvamConfig().chatModel;
+      console.log(`[Sarvam AI Indic Engine] Synthesizing native answer in ${getRegionalLanguageName(targetLang)} with model ${model}...`);
+      const sarvamAnswer = await chatWithSarvam({
+        message,
+        lang: targetLang,
+        history: history.slice(-6),
+        webContext: webResearch.fullAnswer
+      });
+
+      if (sarvamAnswer && sarvamAnswer.trim().length > 0) {
+        const cleanAnswer = cleanSpecialCharacters(sarvamAnswer);
+
+        // Save into persistent Knowledge Database Vault
+        saveKnowledge({
+          id: `kb_${Date.now()}`,
+          query: message,
+          normalizedKey: normalizeQueryKey(message),
+          topic: webResearch.title,
+          summary: cleanSpecialCharacters(webResearch.summary),
+          fullAnswer: cleanAnswer,
+          sources: webResearch.sources,
+          provider: 'sarvam-indic-ai',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          hitCount: 1
+        });
+
+        return res.json({
+          answer: cleanAnswer,
+          language: targetLang,
+          responseId: `sarvam-${Date.now()}`,
+          provider: 'sarvam-indic-ai',
+          sources: webResearch.sources,
+          topic: webResearch.title
+        });
+      }
+    } catch (sarvamErr) {
+      console.warn('[Sarvam AI Chat failed, falling through to secondary LLM]:', sarvamErr);
+    }
+  }
+
+  // 3b. If OpenAI is configured, synthesize with LLM using the live web ground truth
   if (openai) {
     try {
       const langNames: Record<SupportedLanguage, string> = {
@@ -669,13 +728,36 @@ app.get('/api/tts', async (req, res) => {
   const sentences = cleaned.split(/(?<=[.?!।])\s+/);
   const speechText = sentences.slice(0, 4).join(' ').slice(0, 340).trim();
 
-  const cacheKey = `${lang}_${speechText}`;
+  const cacheKey = `tts_${lang}_${speechText}`;
   if (ttsAudioCache.has(cacheKey)) {
     const cachedBuf = ttsAudioCache.get(cacheKey)!;
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Content-Length', cachedBuf.length);
     res.setHeader('Cache-Control', 'public, max-age=86400');
     return res.send(cachedBuf);
+  }
+
+  // 1. Prioritize Sarvam AI Bulbul TTS (Native Indic neural voices for Kannada, Telugu, Hindi, Indian English)
+  if (isSarvamConfigured()) {
+    try {
+      console.log(`[Sarvam AI Voice-Over] Synthesizing speech with Bulbul for ${lang} (${speechText.length} chars)...`);
+      const sarvamAudio = await synthesizeSarvamSpeech(speechText, lang);
+      if (sarvamAudio && sarvamAudio.length > 0) {
+        if (ttsAudioCache.size > 200) {
+          const firstKey = ttsAudioCache.keys().next().value;
+          if (firstKey) ttsAudioCache.delete(firstKey);
+        }
+        ttsAudioCache.set(cacheKey, sarvamAudio);
+
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.setHeader('Content-Length', sarvamAudio.length);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.setHeader('X-TTS-Provider', 'sarvam-bulbul');
+        return res.send(sarvamAudio);
+      }
+    } catch (sarvamTtsErr) {
+      console.warn('[Sarvam TTS failed, falling back to secondary TTS]:', sarvamTtsErr);
+    }
   }
 
   const chunks = splitTextForTTS(speechText);

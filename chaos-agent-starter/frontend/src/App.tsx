@@ -167,6 +167,7 @@ export default function App() {
   const [historySearchQuery, setHistorySearchQuery] = useState('');
   const [editingConvId, setEditingConvId] = useState<string | null>(null);
   const [editingTitleText, setEditingTitleText] = useState('');
+  const [sarvamEnabled, setSarvamEnabled] = useState<boolean>(false);
 
   // Module 4: Document Studio State
   const [docTitle, setDocTitle] = useState('Renewable Energy Advances — Technical Brief');
@@ -284,7 +285,13 @@ export default function App() {
   const checkBackendHealth = async () => {
     try {
       const res = await fetch(`${API}/api/health`, { signal: AbortSignal.timeout(3000) });
-      setBackendOnline(res.ok);
+      if (res.ok) {
+        const data = await res.json();
+        setBackendOnline(true);
+        setSarvamEnabled(Boolean(data.capabilities?.sarvam));
+      } else {
+        setBackendOnline(false);
+      }
     } catch {
       setBackendOnline(false);
     }
@@ -1605,6 +1612,12 @@ export default function App() {
                     </button>
                   ))}
                 </div>
+                {sarvamEnabled && (
+                  <div className="sarvam-indicator-pill" title="Sarvam AI Indic Regional Voice & Text Engine Active">
+                    <Sparkles size={11} className="sarvam-sparkle-icon" />
+                    <span>Sarvam AI Active</span>
+                  </div>
+                )}
               </div>
 
               <div className="chat-composer">
@@ -2476,6 +2489,34 @@ export default function App() {
                   <Moon size={15} />
                   <span>Dark Mode</span>
                 </button>
+              </div>
+            </div>
+
+            {/* Sarvam AI Regional Voice & Indic Engine */}
+            <div className="settings-card">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                <div>
+                  <h3 className="settings-card-title">Sarvam AI — Regional Indic Voice & Text</h3>
+                  <p className="settings-card-sub">
+                    Specialized neural models for Kannada, Telugu, and Hindi speech synthesis (Bulbul) and conversational intelligence (Sarvam-105b).
+                  </p>
+                </div>
+                <div className={`status-pill ${sarvamEnabled ? 'online' : 'idle'}`} style={{ whiteSpace: 'nowrap' }}>
+                  <span className="status-dot" />
+                  <span>{sarvamEnabled ? 'Sarvam Active' : 'Placeholder Ready in .env'}</span>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 12, fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                {sarvamEnabled ? (
+                  <p style={{ margin: 0, color: '#10b981', fontWeight: 500 }}>
+                    ✓ Sarvam AI is fully active! Regional queries in Kannada, Telugu, and Hindi use Sarvam Indic LLM and Bulbul neural speech synthesis.
+                  </p>
+                ) : (
+                  <p style={{ margin: 0 }}>
+                    To activate high-fidelity Indian voices and native Indic chat, paste your key from <a href="https://dashboard.sarvam.ai" target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>dashboard.sarvam.ai</a> into <code style={{ background: 'var(--bg-accent)', padding: '2px 6px', borderRadius: 4 }}>backend/.env</code> under <code style={{ color: 'var(--primary)' }}>SARVAM_API_KEY=</code>.
+                  </p>
+                )}
               </div>
             </div>
 
