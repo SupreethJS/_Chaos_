@@ -23,16 +23,12 @@ import {
 interface CrossDeviceHandoverProps {
   currentConvId?: string;
   userName: string;
-  onSetViewportMode?: (mode: 'desktop' | 'tablet' | 'mobile') => void;
-  activeViewportMode?: 'desktop' | 'tablet' | 'mobile';
   backendUrl?: string;
 }
 
 export const CrossDeviceHandover: React.FC<CrossDeviceHandoverProps> = ({
   currentConvId = '',
   userName,
-  onSetViewportMode,
-  activeViewportMode = 'desktop',
   backendUrl = 'http://localhost:4000',
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
@@ -270,43 +266,13 @@ export const CrossDeviceHandover: React.FC<CrossDeviceHandoverProps> = ({
           </p>
         </div>
 
-        {/* Viewport Frame Switcher */}
-        {onSetViewportMode && (
-          <div className="viewport-switcher-dock">
-            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-              Preview Device Mode:
-            </span>
-            <div className="switcher-pills">
-              <button
-                id="preview-desktop-btn"
-                className={`switch-pill ${activeViewportMode === 'desktop' ? 'active' : ''}`}
-                onClick={() => onSetViewportMode('desktop')}
-                type="button"
-              >
-                <Laptop size={14} />
-                <span>Desktop (Fluid)</span>
-              </button>
-              <button
-                id="preview-tablet-btn"
-                className={`switch-pill ${activeViewportMode === 'tablet' ? 'active' : ''}`}
-                onClick={() => onSetViewportMode('tablet')}
-                type="button"
-              >
-                <Tablet size={14} />
-                <span>Tablet (768px)</span>
-              </button>
-              <button
-                id="preview-mobile-btn"
-                className={`switch-pill ${activeViewportMode === 'mobile' ? 'active' : ''}`}
-                onClick={() => onSetViewportMode('mobile')}
-                type="button"
-              >
-                <Smartphone size={14} />
-                <span>Mobile PWA (390px)</span>
-              </button>
-            </div>
+        {/* Fluid Responsive Active Indicator */}
+        <div className="device-responsive-status">
+          <div className="device-responsive-pill">
+            <span className="live-indicator-dot" />
+            <span>Fluid Viewport: {deviceWidth < 640 ? 'Mobile Phone' : deviceWidth < 1024 ? 'Tablet' : 'Desktop'} ({deviceWidth}px × {deviceHeight}px)</span>
           </div>
-        )}
+        </div>
       </div>
 
       {/* TWO COLUMN GRID: QR CODE HANDOVER & DEVICE CAPABILITY AUDIT */}

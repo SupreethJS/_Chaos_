@@ -85,7 +85,6 @@ export default function App() {
   // Navigation View: 'workspace' | 'history' | 'studio' | 'email' | 'documents' | 'settings' | 'orchestrator' | 'devices'
   const [activeTab, setActiveTab] = useState<'workspace' | 'history' | 'studio' | 'email' | 'documents' | 'settings' | 'orchestrator' | 'devices'>('workspace');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeViewportMode, setActiveViewportMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
   // Theme: 'light' | 'dark'
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -870,7 +869,16 @@ export default function App() {
   }
 
   return (
-    <div className={`app-shell ${activeViewportMode !== 'desktop' ? `viewport-${activeViewportMode}` : ''}`}>
+    <div className="app-shell">
+      {/* Mobile Sidebar Overlay Backdrop */}
+      {mobileMenuOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-label="Close navigation"
+        />
+      )}
+
       {/* SIDEBAR NAVIGATION */}
       <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="brand">
@@ -992,7 +1000,7 @@ export default function App() {
         {/* Top Header */}
         <header className="topbar">
           <div className="topbar-left">
-            <button className="btn-icon" style={{ display: 'flex' }} onClick={() => setMobileMenuOpen(true)}>
+            <button className="btn-icon mobile-menu-toggle" onClick={() => setMobileMenuOpen(true)} title="Open navigation">
               <Menu size={18} />
             </button>
             <div className="topbar-title">
@@ -1040,23 +1048,11 @@ export default function App() {
             <button className="btn-icon" onClick={toggleTheme} title="Toggle theme">
               {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
             </button>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '4px 10px',
-                borderRadius: 20,
-                background: 'var(--bg-surface-muted)',
-                border: '1px solid var(--border-subtle)',
-                fontSize: 12,
-                fontWeight: 600
-              }}
-            >
-              <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'grid', placeItems: 'center', fontSize: 10 }}>
+            <div className="topbar-user-chip">
+              <div className="topbar-user-avatar">
                 {userName[0]}
               </div>
-              <span>{userName}</span>
+              <span className="topbar-user-name">{userName}</span>
             </div>
             <button
               className="btn-icon"
@@ -2038,8 +2034,6 @@ export default function App() {
           <CrossDeviceHandover
             currentConvId={currentConvId}
             userName={userName}
-            activeViewportMode={activeViewportMode}
-            onSetViewportMode={(mode) => setActiveViewportMode(mode)}
             backendUrl={API}
           />
         )}

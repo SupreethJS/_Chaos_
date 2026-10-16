@@ -1366,25 +1366,336 @@ button, input, textarea, select {
   background: var(--bg-surface-muted);
 }
 
-/* Responsive adjustments */
+/* ========================================================== */
+/* FLUID RESPONSIVE SYSTEM (TABLETS, PHONES, DESKTOPS)        */
+/* ========================================================== */
+
+/* Backdrop overlay for mobile sidebar */
+.sidebar-backdrop {
+  display: none;
+}
+
+.mobile-menu-toggle {
+  display: none;
+}
+
+.topbar-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--bg-surface-muted);
+  border: 1px solid var(--border-subtle);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.topbar-user-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+}
+
+.topbar-user-name {
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+/* Tablet & Mobile Breakpoint (<= 860px) */
 @media (max-width: 860px) {
   .app-shell {
     grid-template-columns: 1fr;
+    width: 100%;
+    overflow-x: hidden;
   }
+
+  .mobile-menu-toggle {
+    display: flex;
+  }
+
   .sidebar {
-    display: none;
-  }
-  .sidebar.mobile-open {
     display: flex;
     position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
-    width: 280px;
-    z-index: 200;
+    width: min(300px, 84vw);
+    height: 100vh;
+    height: 100dvh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease;
+    box-shadow: none;
+    overflow-y: auto;
   }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.7);
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 999;
+    animation: fadeIn 0.2s ease-out;
+  }
+
   .doc-studio-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .prompt-suggestions {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+
+  .cross-device-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Standard Mobile Phones (<= 640px) */
+@media (max-width: 640px) {
+  .topbar {
+    padding: 0 12px;
+    height: 56px;
+  }
+
+  .topbar-left {
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .topbar-title {
+    font-size: 14.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
+  }
+
+  .topbar-actions {
+    gap: 6px;
+  }
+
+  .topbar-voice-btn {
+    padding: 6px 9px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .topbar-voice-btn span {
+    display: none;
+  }
+
+  .topbar-user-name {
+    display: none;
+  }
+
+  .topbar-user-chip {
+    padding: 4px;
+    border-radius: 50%;
+  }
+
+  .chat-container {
+    padding: 14px 10px;
+  }
+
+  .welcome-hero {
+    padding: 20px 6px 12px;
+  }
+
+  .hero-title {
+    font-size: clamp(22px, 6vw, 28px);
+    line-height: 1.25;
+  }
+
+  .hero-description {
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+
+  .prompt-suggestions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .suggestion-card {
+    padding: 13px 14px;
+  }
+
+  .chat-message {
+    gap: 10px;
+  }
+
+  .msg-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 11.5px;
+  }
+
+  .msg-bubble {
+    padding: 12px 14px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    border-radius: var(--radius-md);
+  }
+
+  .msg-actions {
+    gap: 5px;
+  }
+
+  .action-btn {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .chat-composer-wrap {
+    padding: 8px 0 max(12px, env(safe-area-inset-bottom));
+  }
+
+  .chat-composer {
+    padding: 8px 12px;
+    border-radius: var(--radius-lg);
+  }
+
+  .composer-send-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+  }
+
+  .composer-mic-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .composer-textarea {
+    min-height: 40px;
+    font-size: 13.5px;
+  }
+
+  .language-selector-bar {
+    padding: 4px 6px 6px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .language-selector-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .lang-pills {
+    flex-wrap: nowrap;
+  }
+
+  .task-runner-container {
+    padding: 14px 12px 30px;
+  }
+
+  .scenario-selector-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .runner-title {
+    font-size: 20px;
+  }
+
+  .runner-header-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .doc-studio-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .studio-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .email-composer-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .email-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .history-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .history-search-input {
+    width: 100%;
+  }
+
+  .voice-modal-backdrop {
+    padding: 0;
+  }
+
+  .voice-modal-card {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .voice-shader-canvas-wrap {
+    width: min(210px, 48vw);
+    height: min(210px, 48vw);
+  }
+
+  .voice-control-dock {
+    padding: 8px 12px;
+  }
+
+  .voice-meta-bar {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .voice-stream-card {
+    padding: 14px;
+  }
+}
+
+/* Compact Mobile Phones (<= 380px) */
+@media (max-width: 380px) {
+  .topbar-title {
+    max-width: 90px;
+  }
+  .hero-title {
+    font-size: 20px;
+  }
+  .suggestion-card strong {
+    font-size: 12.5px;
+  }
+  .suggestion-card span {
+    font-size: 11px;
   }
 }
 
@@ -2706,45 +3017,31 @@ button, input, textarea, select {
   flex-wrap: wrap;
 }
 
-.viewport-switcher-dock {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: flex-end;
-}
-
-.switcher-pills {
-  display: flex;
-  background: var(--bg-surface-muted);
-  padding: 4px;
-  border-radius: 20px;
-  border: 1px solid var(--border-subtle);
-  gap: 4px;
-}
-
-.switch-pill {
-  padding: 5px 12px;
-  border-radius: 16px;
-  border: none;
-  background: transparent;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-muted);
-  cursor: pointer;
+.device-responsive-status {
   display: flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.15s ease;
 }
 
-.switch-pill:hover {
-  color: var(--text-main);
+.device-responsive-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--bg-surface-muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
-.switch-pill.active {
-  background: var(--primary);
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+.device-responsive-pill .live-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseDot 2s infinite ease-in-out;
 }
 
 .cross-device-grid {
@@ -2892,24 +3189,7 @@ button, input, textarea, select {
   font-weight: 700;
 }
 
-/* VIEWPORT CONTAINER PREVIEW WRAPPERS */
-.app-shell.viewport-tablet {
-  max-width: 820px;
-  margin: 20px auto;
-  border-radius: 28px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 12px #1e1b4b;
-  overflow: hidden;
-  height: 94vh;
-}
-
-.app-shell.viewport-mobile {
-  max-width: 410px;
-  margin: 20px auto;
-  border-radius: 36px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3), 0 0 0 12px #1e1b4b;
-  overflow: hidden;
-  height: 94vh;
-}
+/* VIEWPORT CONTAINER PREVIEW WRAPPERS REMOVED FOR FLUID NATIVE RESPONSIVENESS */
 
 /* INSTALL SUCCESS MODAL */
 .install-modal-backdrop {
