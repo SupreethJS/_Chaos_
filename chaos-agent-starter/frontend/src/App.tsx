@@ -1106,7 +1106,13 @@ export default function App() {
               <Mic size={14} />
               <span>Voice</span>
             </button>
-            <button className="btn-icon" onClick={toggleTheme} title="Toggle theme">
+            <button
+              id="theme-toggle-btn"
+              className="btn-icon"
+              onClick={toggleTheme}
+              title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+              aria-label={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+            >
               {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
             </button>
             <div className="topbar-user-chip">
@@ -1142,49 +1148,47 @@ export default function App() {
                   Autonomous temporal intelligence agent for deep technical research, document studio publications, and verified citations.
                 </p>
 
-                <div className="prompt-suggestions-wrapper">
-                  <PromptWaveBackground />
-                  <div className="prompt-suggestions">
-                    <button
-                      className="suggestion-card"
-                      onClick={() => handleSendMessage('Research the latest advances in renewable energy and cite your sources.')}
-                    >
-                      <strong><Sparkles size={15} color="#a855f7" /> Renewable Energy Advances</strong>
-                      <span>Tandem solar cells, sodium-ion grid storage, and floating wind.</span>
-                    </button>
+                <PromptWaveBackground />
+                <div className="prompt-suggestions">
+                  <button
+                    className="suggestion-card"
+                    onClick={() => handleSendMessage('Research the latest advances in renewable energy and cite your sources.')}
+                  >
+                    <strong><Sparkles size={15} color="#a855f7" /> Renewable Energy Advances</strong>
+                    <span>Tandem solar cells, sodium-ion grid storage, and floating wind.</span>
+                  </button>
 
-                    <button
-                      className="suggestion-card"
-                      onClick={() => handleSendMessage('Synthesize autonomous AI agent safety frameworks and orchestration standards.')}
-                    >
-                      <strong><Shield size={15} color="#10b981" /> AI Agent Safety Standards</strong>
-                      <span>Deterministic tool gates and multi-agent coordination protocols.</span>
-                    </button>
+                  <button
+                    className="suggestion-card"
+                    onClick={() => handleSendMessage('Synthesize autonomous AI agent safety frameworks and orchestration standards.')}
+                  >
+                    <strong><Shield size={15} color="#10b981" /> AI Agent Safety Standards</strong>
+                    <span>Deterministic tool gates and multi-agent coordination protocols.</span>
+                  </button>
 
-                    <button
-                      className="suggestion-card"
-                      onClick={() => handleSendMessage('Analyze emerging battery storage technologies for long-duration grid stabilization.')}
-                    >
-                      <strong><FileText size={15} color="#f97316" /> Long-Duration Storage</strong>
-                      <span>Iron-air, flow batteries, and cost per kWh comparisons.</span>
-                    </button>
+                  <button
+                    className="suggestion-card"
+                    onClick={() => handleSendMessage('Analyze emerging battery storage technologies for long-duration grid stabilization.')}
+                  >
+                    <strong><FileText size={15} color="#f97316" /> Long-Duration Storage</strong>
+                    <span>Iron-air, flow batteries, and cost per kWh comparisons.</span>
+                  </button>
 
-                    <button
-                      className="suggestion-card"
-                      onClick={() => setShowVoiceModal(true)}
-                    >
-                      <strong><Mic size={15} color="#3525cd" /> Voice Intelligence Stream</strong>
-                      <span>Talk directly to JARVIS with real-time neural shader feedback.</span>
-                    </button>
+                  <button
+                    className="suggestion-card"
+                    onClick={() => setShowVoiceModal(true)}
+                  >
+                    <strong><Mic size={15} color="#3525cd" /> Voice Intelligence Stream</strong>
+                    <span>Talk directly to JARVIS with real-time neural shader feedback.</span>
+                  </button>
 
-                    <button
-                      className="suggestion-card"
-                      onClick={() => setActiveTab('orchestrator')}
-                    >
-                      <strong><Layers size={15} color="#8b5cf6" /> Multi-Step Task Pipeline</strong>
-                      <span>Automate research → Document Studio → PDF → Email across apps.</span>
-                    </button>
-                  </div>
+                  <button
+                    className="suggestion-card"
+                    onClick={() => setActiveTab('orchestrator')}
+                  >
+                    <strong><Layers size={15} color="#8b5cf6" /> Multi-Step Task Pipeline</strong>
+                    <span>Automate research → Document Studio → PDF → Email across apps.</span>
+                  </button>
                 </div>
               </div>
             ) : (
